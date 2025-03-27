@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Mapbox - 사용자 위치 + 커스텀 마커 + 이미지 오버레이</title>
+  <title>botanicpark_map</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
@@ -17,6 +17,15 @@
       background-size: cover;
       border-radius: 50%;
       border: 2px solid white;
+    }
+
+    .popup-content {
+      font-size: 14px;
+    }
+
+    .popup-content a {
+      color: blue;
+      text-decoration: underline;
     }
   </style>
 </head>
@@ -37,15 +46,14 @@
   });
 
   map.on('load', () => {
-    // 지도 이미지 오버레이 추가
     map.addSource('overlay', {
       type: 'image',
       url: 'botanicpark_map.jpeg',
       coordinates: [
-      [126.8325, 37.5713], // 좌상단 (lng, lat)
-      [126.8370, 37.5713], // 우상단
-      [126.8370, 37.5673], // 우하단
-      [126.8325, 37.5673]  // 좌하단
+        [126.83117, 37.57416],
+        [126.84083, 37.57416],
+        [126.84083, 37.56578],
+        [126.83117, 37.56578]
       ]
     });
 
@@ -57,7 +65,6 @@
     });
   });
 
-  // 사용자 위치 마커 추가
   function addUserMarker(lng, lat) {
     const el = document.createElement('div');
     el.className = 'custom-marker';
@@ -71,12 +78,11 @@
     addUserMarker(longitude, latitude);
   });
 
-  // 각 위치에 커스텀 마커 추가
   const markers = [
-  { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-  { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
-  { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
-  { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
+    { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
+    { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
+    { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
   ];
 
   markers.forEach(m => {
@@ -84,16 +90,18 @@
     el.className = 'custom-marker';
     el.style.backgroundImage = `url(${m.img})`;
 
-    const marker = new mapboxgl.Marker(el)
-      .setLngLat([m.lng, m.lat])
-      .setPopup(new mapboxgl.Popup().setText(m.title))
-      .addTo(map);
-
+    let popupContent = `<div class="popup-content">${m.title}`;
     if (m.url) {
-      el.addEventListener('click', () => {
-        window.open(m.url, '_blank');
-      });
+      popupContent += `<br><a href="${m.url}" target="_blank">자세히 보기</a>`;
     }
+    popupContent += `</div>`;
+
+    const popup = new mapboxgl.Popup().setHTML(popupContent);
+
+    new mapboxgl.Marker(el)
+      .setLngLat([m.lng, m.lat])
+      .setPopup(popup)
+      .addTo(map);
   });
 </script>
 </body>
