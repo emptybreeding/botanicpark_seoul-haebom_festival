@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>Mapbox - 사용자 위치 + 커스텀 마커</title>
+  <title>Mapbox - 사용자 위치 + 커스텀 마커 + 이미지 오버레이</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
@@ -29,37 +29,54 @@
   const map = new mapboxgl.Map({
     container: 'map',
     style: 'mapbox://styles/mapbox/light-v11',
-    center: [126.825, 37.566],
+    center: [126.8345, 37.5693],
     zoom: 16,
     pitch: 45,
     bearing: -10,
     antialias: true
   });
 
-  // 사용자 위치 마커 커스텀
+  map.on('load', () => {
+    // 지도 이미지 오버레이 추가
+    map.addSource('overlay', {
+      type: 'image',
+      url: 'botanicpark_map.jpeg',
+      coordinates: [
+        [126.8325, 37.5713],
+        [126.8370, 37.5713],
+        [126.8370, 37.5673],
+        [126.8325, 37.5673]
+      ]
+    });
+
+    map.addLayer({
+      id: 'overlay-layer',
+      type: 'raster',
+      source: 'overlay',
+      paint: { 'raster-opacity': 0.9 }
+    });
+  });
+
+  // 사용자 위치 마커 추가
   function addUserMarker(lng, lat) {
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.backgroundImage = 'url(dung1.png)';
-
-    new mapboxgl.Marker(el)
-      .setLngLat([lng, lat])
-      .addTo(map);
+    new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map);
   }
 
-  // 현재 위치 추적
   navigator.geolocation.getCurrentPosition((position) => {
     const { latitude, longitude } = position.coords;
     map.setCenter([longitude, latitude]);
     addUserMarker(longitude, latitude);
   });
 
-  // 커스텀 마커 데이터
+  // 각 위치에 커스텀 마커 추가
   const markers = [
-    { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.83499, lat: 37.83499, img: 'on1.png', title: '식물문화센터', url: '' },
-    { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
-    { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
+  { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+  { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
+  { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
+  { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
   ];
 
   markers.forEach(m => {
