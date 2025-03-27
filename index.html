@@ -3,7 +3,7 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>botanicpark_map</title>
+  <title>Mapbox 자동 팝업 + 반응형 UI</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
@@ -20,11 +20,21 @@
     }
 
     .popup-content {
-      font-size: 14px;
+      font-size: 1em;
+      padding: 4px;
+      max-width: 200px;
+      line-height: 1.3em;
     }
 
     .popup-content a {
-      color: blue;
+      display: inline-block;
+      margin-top: 6px;
+      color: #007AFF;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    .popup-content a:hover {
       text-decoration: underline;
     }
   </style>
@@ -72,12 +82,6 @@
     new mapboxgl.Marker(el).setLngLat([lng, lat]).addTo(map);
   }
 
-  navigator.geolocation.getCurrentPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    map.setCenter([longitude, latitude]);
-    addUserMarker(longitude, latitude);
-  });
-
   const markers = [
     { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
@@ -85,24 +89,56 @@
     { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
   ];
 
+  let currentPopup = null;
+  let userMarker = null;
+
+  function showPopupIfNearby(userLng, userLat) {
+    markers.forEach(m => {
+      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+      if (distance < 50) {
+        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+          if (currentPopup) currentPopup.remove();
+          const popupHTML = `
+            <div class="popup-content">
+              ${m.title}
+              ${m.url ? `<br><a href="${m.url}" target="_blank">자세히 보기</a>` : ''}
+            </div>
+          `;
+          currentPopup = new mapboxgl.Popup()
+            .setLngLat([m.lng, m.lat])
+            .setHTML(popupHTML)
+            .addTo(map);
+        }
+      }
+    });
+  }
+
+  navigator.geolocation.watchPosition((position) => {
+    const { latitude, longitude } = position.coords;
+    map.setCenter([longitude, latitude]);
+    if (userMarker) userMarker.remove();
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.style.backgroundImage = 'url(dung1.png)';
+    userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+    showPopupIfNearby(longitude, latitude);
+  }, err => {
+    alert("위치 정보를 가져올 수 없습니다.");
+  }, {
+    enableHighAccuracy: true,
+    maximumAge: 0,
+    timeout: 5000
+  });
+
+  // 마커 추가만 (이미지용)
   markers.forEach(m => {
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.backgroundImage = `url(${m.img})`;
-
-    let popupContent = `<div class="popup-content">${m.title}`;
-    if (m.url) {
-      popupContent += `<br><a href="${m.url}" target="_blank">자세히 보기</a>`;
-    }
-    popupContent += `</div>`;
-
-    const popup = new mapboxgl.Popup().setHTML(popupContent);
-
-    new mapboxgl.Marker(el)
-      .setLngLat([m.lng, m.lat])
-      .setPopup(popup)
-      .addTo(map);
+    new mapboxgl.Marker(el).setLngLat([m.lng, m.lat]).addTo(map);
   });
 </script>
+
+<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 </body>
 </html>
