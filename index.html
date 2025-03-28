@@ -3,14 +3,14 @@
 <html>
 <head>
   <meta charset="utf-8" />
-  <title>botanicpark_map</title>
+  <title>Mapbox 자동 팝업</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
     body, html { margin: 0; padding: 0; height: 100%; }
     #map { width: 100%; height: 100%; }
-
     .custom-marker {
       width: 60px;
       height: 60px;
@@ -18,14 +18,12 @@
       border-radius: 50%;
       border: 2px solid white;
     }
-
     .popup-content {
       font-size: 1em;
       padding: 4px;
       max-width: 200px;
       line-height: 1.3em;
     }
-
     .popup-content a {
       display: inline-block;
       margin-top: 6px;
@@ -33,7 +31,6 @@
       text-decoration: none;
       font-weight: bold;
     }
-
     .popup-content a:hover {
       text-decoration: underline;
     }
@@ -41,7 +38,6 @@
 </head>
 <body>
 <div id="map"></div>
-
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
@@ -60,13 +56,12 @@
       type: 'image',
       url: 'botanicpark_map.jpeg',
       coordinates: [
-      [126.83048, 37.56903],
-      [126.83572, 37.57396],
-      [126.84101, 37.57103],
-      [126.83499, 37.56581]
+        [126.83117, 37.57416],
+        [126.84083, 37.57416],
+        [126.84083, 37.56578],
+        [126.83117, 37.56578]
       ]
     });
-
     map.addLayer({
       id: 'overlay-layer',
       type: 'raster',
@@ -83,11 +78,11 @@
   }
 
   const markers = [
-  { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-  { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
-  { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
-  { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
-];
+    { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터', url: '' },
+    { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원', url: '' },
+    { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실', url: '' }
+  ];
 
   let currentPopup = null;
   let userMarker = null;
@@ -130,7 +125,6 @@
     timeout: 5000
   });
 
-  // 마커 추가만 (이미지용)
   markers.forEach(m => {
     const el = document.createElement('div');
     el.className = 'custom-marker';
@@ -138,7 +132,5 @@
     new mapboxgl.Marker(el).setLngLat([m.lng, m.lat]).addTo(map);
   });
 </script>
-
-<script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
 </body>
 </html>
