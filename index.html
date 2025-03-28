@@ -90,7 +90,7 @@
   function showPopupIfNearby(userLng, userLat) {
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      if (distance < 50) {
+      if (distance < 20) {
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
