@@ -123,7 +123,7 @@
   map.on('zoom', () => {
     const zoom = map.getZoom();
     markerElements.forEach(el => {
-      el.style.display = (zoom >= 17) ? 'block' : 'none';
+      el.style.display = (zoom >= 16) ? 'block' : 'none';
     });
   });
 
