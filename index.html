@@ -57,11 +57,11 @@
       type: 'image',
       url: 'background_map.png',
       coordinates: [
-      [126.827, 37.57312],     // top-left
-      [126.844, 37.57312],     // top-right
-      [126.844, 37.56684],     // bottom-right
-      [126.827, 37.56684]      // bottom-left
-    ]
+        [126.74773, 37.57312],   // 좌상단
+        [126.92345, 37.57312],   // 우상단
+        [126.92345, 37.56684],   // 우하단
+        [126.74773, 37.56684]    // 좌하단
+      ]
     });
 
     map.addLayer({
@@ -71,15 +71,6 @@
       paint: { 'raster-opacity': 1 }
     }, 'tile_layer_0');
     
-    map.addLayer({
-      id: 'background_layer',
-      type: 'raster',
-      source: 'background_image',
-      paint: { 'raster-opacity': 1 }
-    }, 'tile_layer_0'); // ← 기존 타일 레이어 앞에 삽입 (즉, 아래쪽에 깔림)
-
-
-
 
     map.addSource('tile_source_0', {
       type: 'image',
