@@ -70,18 +70,6 @@
       source: 'background_image',
       paint: { 'raster-opacity': 1 }
     }, 'tile_layer_0');
-
-
-    map.addSource('background_image', {
-      type: 'image',
-      url: 'background_map.png',
-      coordinates: [
-        [126.74773, 37.57312],   // top-left (좌상)
-        [126.92345, 37.57312],   // top-right (우상)
-        [126.92345, 37.56684],   // bottom-right (우하)
-        [126.74773, 37.56684]    // bottom-left (좌하)
-      ]
-    });
     
     map.addLayer({
       id: 'background_layer',
