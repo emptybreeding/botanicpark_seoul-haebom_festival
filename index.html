@@ -57,6 +57,25 @@
       type: 'image',
       url: 'background_map.png',
       coordinates: [
+        [126.74773, 37.57312],   // 좌상단
+        [126.92345, 37.57312],   // 우상단
+        [126.92345, 37.56684],   // 우하단
+        [126.74773, 37.56684]    // 좌하단
+      ]
+    });
+
+    map.addLayer({
+      id: 'background_layer',
+      type: 'raster',
+      source: 'background_image',
+      paint: { 'raster-opacity': 1 }
+    }, 'tile_layer_0');
+
+
+    map.addSource('background_image', {
+      type: 'image',
+      url: 'background_map.png',
+      coordinates: [
         [126.74773, 37.57312],   // top-left (좌상)
         [126.92345, 37.57312],   // top-right (우상)
         [126.92345, 37.56684],   // bottom-right (우하)
