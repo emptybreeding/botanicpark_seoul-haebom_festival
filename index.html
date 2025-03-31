@@ -52,7 +52,7 @@
         {
           id: 'background',
           type: 'background',
-          paint: { 'background-color': '#448e7a' } // 🎨 단색 배경
+          paint: { 'background-color': '#448e7a' }
         }
       ]
     },
@@ -95,8 +95,40 @@
     { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
   ];
 
-  let currentPopup = null;
+  const markerElements = [];
+
+  markers.forEach(m => {
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    el.style.backgroundImage = `url(${m.img})`;
+    el.style.width = '75px';
+    el.style.height = '75px';
+    el.style.display = 'none'; // 처음엔 숨김
+
+    const marker = new mapboxgl.Marker(el)
+      .setLngLat([m.lng, m.lat])
+      .setPopup(new mapboxgl.Popup().setHTML(`
+        <div class="popup-content">
+          ${m.title}
+          ${m.url ? `<br><a href="${m.url}" target="_blank">자세히 보기</a>` : ''}
+        </div>
+      `))
+      .addTo(map);
+
+    markerElements.push(el);
+  });
+
+  // 줌 레벨 변경에 따라 마커 표시/숨김
+  map.on('zoom', () => {
+    const zoom = map.getZoom();
+    markerElements.forEach(el => {
+      el.style.display = (zoom >= 17) ? 'block' : 'none';
+    });
+  });
+
+  // 사용자 위치 표시 및 근접 시 팝업
   let userMarker = null;
+  let currentPopup = null;
 
   function showPopupIfNearby(userLng, userLat) {
     markers.forEach(m => {
@@ -130,27 +162,6 @@
     showPopupIfNearby(longitude, latitude);
   });
 
-  markers.forEach(m => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundImage = `url(${m.img})`;
-    el.style.width = '75px';
-    el.style.height = '75px';
-
-    const popupHTML = `
-      <div class="popup-content">
-        ${m.title}
-        ${m.url ? `<br><a href="${m.url}" target="_blank">자세히 보기</a>` : ''}
-      </div>
-    `;
-
-    const popup = new mapboxgl.Popup().setLngLat([m.lng, m.lat]).setHTML(popupHTML);
-
-    new mapboxgl.Marker(el)
-      .setLngLat([m.lng, m.lat])
-      .setPopup(popup)
-      .addTo(map);
-  });
 </script>
 </body>
 </html>
