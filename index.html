@@ -21,20 +21,18 @@
       pointer-events: auto;
     }
     .popup-content {
+      font-family: "Noto Sans KR", sans-serif;
+      background: white;
+      border-radius: 12px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+      color: #333;
+      font-weight: 600;
       font-size: 1em;
-      padding: 4px;
-      max-width: 200px;
-      line-height: 1.3em;
+      cursor: pointer;
     }
-    .popup-content a {
-      display: inline-block;
-      margin-top: 6px;
-      color: #007AFF;
-      text-decoration: none;
-      font-weight: bold;
-    }
-    .popup-content a:hover {
-      text-decoration: underline;
+    .popup-content:hover {
+      background: #f2f2f2;
     }
   </style>
 </head>
@@ -104,22 +102,22 @@
     el.style.backgroundImage = `url(${m.img})`;
     el.style.width = '75px';
     el.style.height = '75px';
-    el.style.display = 'none'; // 처음엔 숨김
+    el.style.display = 'none';
+
+    const popupHTML = `
+      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+        ${m.title}
+      </div>
+    `;
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat([m.lng, m.lat])
-      .setPopup(new mapboxgl.Popup().setHTML(`
-        <div class="popup-content">
-          ${m.title}
-          ${m.url ? `<br><a href="${m.url}" target="_blank">자세히 보기</a>` : ''}
-        </div>
-      `))
+      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
 
     markerElements.push(el);
   });
 
-  // 줌 레벨 변경에 따라 마커 표시/숨김
   map.on('zoom', () => {
     const zoom = map.getZoom();
     markerElements.forEach(el => {
@@ -127,7 +125,6 @@
     });
   });
 
-  // 사용자 위치 표시 및 근접 시 팝업
   let userMarker = null;
   let currentPopup = null;
 
@@ -138,9 +135,8 @@
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
-            <div class="popup-content">
+            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
               ${m.title}
-              ${m.url ? `<br><a href="${m.url}" target="_blank">자세히 보기</a>` : ''}
             </div>
           `;
           currentPopup = new mapboxgl.Popup()
@@ -162,7 +158,6 @@
     userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
     showPopupIfNearby(longitude, latitude);
   });
-
 </script>
 </body>
 </html>
