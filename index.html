@@ -10,10 +10,9 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100%; }
     #map { width: 100%; height: 100%; }
-
     .custom-marker {
-      width: 100px;
-      height: 100px;
+      width: 75px;
+      height: 75px;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
@@ -21,32 +20,22 @@
       border-radius: 0;
       pointer-events: auto;
     }
-
-    .mapboxgl-popup-content {
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
-    }
-
-    .mapboxgl-popup-close-button {
-      display: none;
-    }
-
     .popup-content {
-      font-family: "Noto Sans KR", sans-serif;
-      background: white;
-      border-radius: 12px;
-      padding: 10px 14px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      color: #333;
-      font-weight: 600;
       font-size: 1em;
+      padding: 8px 12px;
+      color: white;
+      background-color: rgba(0, 0, 0, 0.6);
+      border-radius: 12px;
+      font-weight: bold;
       text-align: center;
       cursor: pointer;
     }
-
-    .popup-content:hover {
-      background: #f2f2f2;
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    .bounce {
+      animation: bounce 0.6s ease infinite;
     }
   </style>
 </head>
@@ -73,19 +62,19 @@
     bearing: 314
   });
 
-  map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
+  const tiles = [
+    { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
+    { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
+    { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
+    { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
+    { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
+    { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
+    { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
+    { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
+    { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
+  ];
 
+  map.on('load', () => {
     tiles.forEach(tile => {
       map.addSource(tile.id, {
         type: 'image',
@@ -102,10 +91,10 @@
   });
 
   const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.79136, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
-    { lng: 126.78971, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
-    { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
+    { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터' },
+    { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원' },
+    { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
   ];
 
   const markerElements = [];
@@ -114,19 +103,12 @@
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.backgroundImage = `url(${m.img})`;
-    el.style.width = '75px';
-    el.style.height = '75px';
     el.style.display = 'none';
-
-    const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-        ${m.title}
-      </div>
-    `;
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat([m.lng, m.lat])
-      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
+      .setPopup(new mapboxgl.Popup({ closeButton: false, closeOnClick: false })
+        .setHTML(`<div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>${m.title}</div>`))
       .addTo(map);
 
     markerElements.push(el);
@@ -143,23 +125,33 @@
   let currentPopup = null;
 
   function showPopupIfNearby(userLng, userLat) {
-    markers.forEach(m => {
+    let nearby = false;
+
+    markers.forEach((m, idx) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+      const el = markerElements[idx];
+
       if (distance < 70) {
+        nearby = true;
+        el.classList.add('bounce');
+
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
-          const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-              ${m.title}
-            </div>
-          `;
-          currentPopup = new mapboxgl.Popup()
+          const popupHTML = `<div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>${m.title}</div>`;
+          currentPopup = new mapboxgl.Popup({ closeButton: false, closeOnClick: false })
             .setLngLat([m.lng, m.lat])
             .setHTML(popupHTML)
             .addTo(map);
         }
+      } else {
+        el.classList.remove('bounce');
       }
     });
+
+    if (!nearby && currentPopup) {
+      currentPopup.remove();
+      currentPopup = null;
+    }
   }
 
   navigator.geolocation.watchPosition((position) => {
