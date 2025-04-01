@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8" />
   <title>botanicpark_seoul-haebom_festival</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; }
+    body, html { margin: 0; padding: 0; height: 100dvh; }
     #map { width: 100%; height: 100%; }
 
     .custom-marker {
@@ -119,7 +119,7 @@
     el.style.display = 'none';
 
     const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
         ${m.title}
       </div>
     `;
@@ -143,13 +143,15 @@
   let currentPopup = null;
 
   function showPopupIfNearby(userLng, userLat) {
+    let nearby = false;
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
       if (distance < 20) {
+        nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
               ${m.title}
             </div>
           `;
@@ -168,13 +170,21 @@
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-    map.setCenter([longitude, latitude]);
-    if (userMarker) userMarker.remove();
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundImage = 'url(dung1.gif)';
-    userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+    map.easeTo({
+      center: [longitude, latitude],
+      duration: 1000
+    });
+    if (!userMarker) {
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.style.backgroundImage = 'url(dung1.gif)';
+      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+    } else {
+      userMarker.setLngLat([longitude, latitude]);
+    }
     showPopupIfNearby(longitude, latitude);
+  }, (error) => {
+    console.error("Geolocation error:", error);
   });
 </script>
 </body>
