@@ -45,14 +45,16 @@
       cursor: pointer;
     }
 
+    /* 바운스 애니메이션 제거됨
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-15px); }
     }
-    
+
     .bounce {
       animation: bounce 0.6s infinite;
     }
+    */
 
     .popup-content:hover {
       background: #f2f2f2;
@@ -111,11 +113,11 @@
   });
 
   const markers = [
-  { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-  { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
-  { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
-  { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
-];
+    { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
+    { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
+    { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
+  ];
 
   const markerElements = [];
 
@@ -148,56 +150,52 @@
     });
     if (userMarker) {
       const userLngLat = userMarker.getLngLat();
-      showPopupIfNearby(userLngLat.lng, userLngLat.lat); //수정한 부분으로 불필요시 삭제
+      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
     }
-    });
+  });
 
   let userMarker = null;
   let currentPopup = null;
 
-function showPopupIfNearby(userLng, userLat) {
-  const zoom = map.getZoom();
-  let nearby = false;
+  function showPopupIfNearby(userLng, userLat) {
+    const zoom = map.getZoom();
+    let nearby = false;
 
-  if (zoom < 16) {
-    if (currentPopup) {
+    if (zoom < 16) {
+      if (currentPopup) {
+        currentPopup.remove();
+        currentPopup = null;
+      }
+      return; // 바운스 제거: bounce 관련 코드 삭제됨
+    }
+
+    markers.forEach((m, i) => {
+      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+
+      const el = markerElements[i];
+      if (distance < 100) {
+        nearby = true;
+
+        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+          if (currentPopup) currentPopup.remove();
+          const popupHTML = `
+            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+              ${m.title}
+            </div>
+          `;
+          currentPopup = new mapboxgl.Popup()
+            .setLngLat([m.lng, m.lat])
+            .setHTML(popupHTML)
+            .addTo(map);
+        }
+      }
+    });
+
+    if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
     }
-    markerElements.forEach(el => el.classList.remove('bounce')); // 모든 마커 bounce 제거
-    return;
   }
-
-  markers.forEach((m, i) => {
-    const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
-    const el = markerElements[i];
-    if (distance < 100) {
-      nearby = true;
-      el.classList.add('bounce');
-
-      if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
-        if (currentPopup) currentPopup.remove();
-        const popupHTML = `
-          <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-            ${m.title}
-          </div>
-        `;
-        currentPopup = new mapboxgl.Popup()
-          .setLngLat([m.lng, m.lat])
-          .setHTML(popupHTML)
-          .addTo(map);
-      }
-    } else {
-      el.classList.remove('bounce'); // 100m 밖이면 bounce 제거
-    }
-  });
-
-  if (!nearby && currentPopup) {
-    currentPopup.remove();
-    currentPopup = null;
-  }
-}
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
