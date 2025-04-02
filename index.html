@@ -22,15 +22,6 @@
       pointer-events: auto;
     }
 
-    .bounce {
-      animation: bounce 1s infinite;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
-    }
-
     .mapboxgl-popup-content {
       background: transparent;
       box-shadow: none;
@@ -82,19 +73,19 @@
     bearing: 314
   });
 
-  const tiles = [
-    { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-    { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-    { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-    { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-    { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-    { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-    { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-    { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-    { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-  ];
-
   map.on('load', () => {
+    const tiles = [
+      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
+      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
+      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
+      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
+      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
+      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
+      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
+      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
+      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
+    ];
+
     tiles.forEach(tile => {
       map.addSource(tile.id, {
         type: 'image',
@@ -117,7 +108,6 @@
   { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
 ];
 
-  let currentPopup = null;
   const markerElements = [];
 
   markers.forEach(m => {
@@ -127,10 +117,16 @@
     el.style.width = '75px';
     el.style.height = '75px';
     el.style.display = 'none';
-    m.el = el;
 
-    new mapboxgl.Marker(el)
+    const popupHTML = `
+      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+        ${m.title}
+      </div>
+    `;
+
+    const marker = new mapboxgl.Marker(el)
       .setLngLat([m.lng, m.lat])
+      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
 
     markerElements.push(el);
@@ -143,67 +139,41 @@
     });
   });
 
+  let userMarker = null;
+  let currentPopup = null;
+
   function showPopupIfNearby(userLng, userLat) {
     let nearby = false;
-
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
-      if (distance < 50) {
-        m.el.classList.add('bounce');
-      } else {
-        m.el.classList.remove('bounce');
-      }
-
       if (distance < 20) {
         nearby = true;
-        if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
+        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
-          
-const popupHTML = `
-  <div class="popup-content" ${m.url ? `data-url="${m.url}"` : ''}>
-    ${m.title}
-  </div>
-`;
-
-currentPopup = new mapboxgl.Popup()
-  .setLngLat([m.lng, m.lat])
-  .setHTML(popupHTML)
-  .addTo(map);
-
-// 클릭 시 팝업 닫힘 + URL 이동
-setTimeout(() => {
-  const popupEl = document.querySelector('.popup-content');
-  if (popupEl) {
-    popupEl.addEventListener('click', () => {
-      if (currentPopup) currentPopup.remove();
-      currentPopup = null;
-      const url = popupEl.dataset.url;
-      if (url) window.open(url, '_blank');
-    });
-  }
-}, 0);
-
+          const popupHTML = `
+            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+              ${m.title}
+            </div>
+          `;
+          currentPopup = new mapboxgl.Popup()
+            .setLngLat([m.lng, m.lat])
+            .setHTML(popupHTML)
+            .addTo(map);
         }
       }
     });
-
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
     }
   }
 
-  let userMarker = null;
-
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-
     map.easeTo({
       center: [longitude, latitude],
       duration: 1000
     });
-
     if (!userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
@@ -212,7 +182,6 @@ setTimeout(() => {
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
-
     showPopupIfNearby(longitude, latitude);
   }, (error) => {
     console.error("Geolocation error:", error);
