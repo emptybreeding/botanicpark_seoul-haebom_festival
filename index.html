@@ -11,21 +11,24 @@
     body, html { margin: 0; padding: 0; height: 100dvh; }
     #map { width: 100%; height: 100%; }
 
+    .marker-wrapper {
+      width: 75px;
+      height: 75px;
+      position: relative;
+      transform: translate(-50%, -50%);
+    }
+
     .custom-marker {
-      width: 100px;
-      height: 100px;
+      width: 100%;
+      height: 100%;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      border: none;
-      border-radius: 0;
-      pointer-events: auto;
-      transform: translate(-50%, -50%); /* 중심 고정 */
     }
 
     @keyframes bounce {
-      0%, 100% { transform: translate(-50%, -50%); }
-      50% { transform: translate(-50%, -65%); }
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
     }
 
     .bounce {
@@ -83,34 +86,6 @@
     bearing: 314
   });
 
-  map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
-
-    tiles.forEach(tile => {
-      map.addSource(tile.id, {
-        type: 'image',
-        url: tile.url,
-        coordinates: tile.coords
-      });
-      map.addLayer({
-        id: tile.id,
-        type: 'raster',
-        source: tile.id,
-        paint: { 'raster-opacity': 1 }
-      });
-    });
-  });
-
   const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
@@ -121,37 +96,26 @@
   const markerElements = [];
 
   markers.forEach(m => {
+    const wrapper = document.createElement('div');
+    wrapper.className = 'marker-wrapper';
+
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.backgroundImage = `url(${m.img})`;
-    el.style.width = '75px';
-    el.style.height = '75px';
-    el.style.display = 'none';
-    el.style.transform = 'translate(-50%, -50%)'; // 중심 정렬
+    wrapper.appendChild(el);
 
     const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
         ${m.title}
       </div>
     `;
 
-    const marker = new mapboxgl.Marker(el)
+    const marker = new mapboxgl.Marker(wrapper)
       .setLngLat([m.lng, m.lat])
       .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
 
     markerElements.push(el);
-  });
-
-  map.on('zoom', () => {
-    const zoom = map.getZoom();
-    markerElements.forEach(el => {
-      el.style.display = (zoom >= 16) ? 'block' : 'none';
-    });
-    if (userMarker) {
-      const userLngLat = userMarker.getLngLat();
-      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
-    }
   });
 
   let userMarker = null;
@@ -172,8 +136,8 @@
 
     markers.forEach((m, i) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
       const el = markerElements[i];
+
       if (distance < 100) {
         nearby = true;
         el.classList.add('bounce');
@@ -181,7 +145,7 @@
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
               ${m.title}
             </div>
           `;
@@ -203,17 +167,16 @@
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-    map.easeTo({
-      center: [longitude, latitude],
-      duration: 1000
-    });
+    map.easeTo({ center: [longitude, latitude], duration: 1000 });
 
     if (!userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
       el.style.backgroundImage = 'url(dung1.gif)';
-      el.style.transform = 'translate(-50%, -50%)'; // 중심 정렬
-      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+      const wrapper = document.createElement('div');
+      wrapper.className = 'marker-wrapper';
+      wrapper.appendChild(el);
+      userMarker = new mapboxgl.Marker(wrapper).setLngLat([longitude, latitude]).addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
