@@ -160,21 +160,21 @@
     let nearby = false;
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
-      // 바운스 효과 (50m 이내)
+  
       if (distance < 50) {
-        m.el.classList.add('bounce');
+        if (!m.el.classList.contains('bounce')) {
+          m.el.classList.add('bounce');
+        }
       } else {
         m.el.classList.remove('bounce');
       }
-
-      // 팝업 조건 (20m 이내)
+  
       if (distance < 20) {
         nearby = true;
-        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+        if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
               ${m.title}
             </div>
           `;
@@ -185,6 +185,7 @@
         }
       }
     });
+  
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
