@@ -180,10 +180,11 @@
 
   let userMarker = null;
 
-  navigator.geolocation.watchPosition((position) => {
+  // 📍 모바일 사용자는 위치 권한을 꼭 허용해야 합니다.
+navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
 
-    map.easeTo({
+    map.panTo({
       center: [longitude, latitude],
       duration: 1000
     });
@@ -192,7 +193,7 @@
       const el = document.createElement('div');
       el.className = 'custom-marker';
       el.style.backgroundImage = 'url(dung1.gif)';
-      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).setLngLat([longitude, latitude]).addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
