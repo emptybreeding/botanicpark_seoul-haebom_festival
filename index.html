@@ -140,7 +140,8 @@
     if (userMarker) {
       const userLngLat = userMarker.getLngLat();
       showPopupIfNearby(userLngLat.lng, userLngLat.lat); //수정한 부분으로 불필요시 삭제
-  });
+    }
+    });
 
   let userMarker = null;
   let currentPopup = null;
