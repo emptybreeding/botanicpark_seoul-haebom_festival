@@ -173,7 +173,7 @@
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
       const el = markerElements[i];
-      if (distance < 100) {
+      if (distance < 20) {
         nearby = true;
 
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
