@@ -3,41 +3,64 @@
 <head>
   <meta charset="utf-8" />
   <title>botanicpark_seoul-haebom_festival</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html { margin: 0; padding: 0; height: 100%; }
+    body, html { margin: 0; padding: 0; height: 100dvh; }
     #map { width: 100%; height: 100%; }
+
     .custom-marker {
-      width: 75px;
-      height: 75px;
+      width: 100px;
+      height: 100px;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
       border: none;
       border-radius: 0;
       pointer-events: auto;
+      transition: transform 0.3s ease;
     }
-    .popup-content {
-      background: rgba(255, 255, 255, 0.85);
-      padding: 8px;
-      border-radius: 8px;
-      font-size: 1em;
-      text-align: center;
-      font-weight: bold;
-    }
-    .popup-content a {
-      text-decoration: none;
-      color: #007AFF;
-    }
+
     .bounce {
       animation: bounce 1s infinite;
     }
+
     @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-10px); }
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
+    }
+
+    .mapboxgl-popup-content {
+      background: transparent;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .mapboxgl-popup-close-button {
+      display: none;
+    }
+
+    .popup-content {
+      font-family: "Noto Sans KR", sans-serif;
+      background: white;
+      border-radius: 12px;
+      padding: 10px 14px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      color: #333;
+      font-weight: 600;
+      font-size: 1em;
+      text-align: center;
+      cursor: pointer;
+    }
+
+    .popup-content:hover {
+      background: #f2f2f2;
     }
   </style>
 </head>
@@ -64,7 +87,8 @@
     bearing: 314
   });
 
-  const tiles = [
+  map.on('load', () => {
+    const tiles = [
     { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
     { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
     { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
@@ -75,8 +99,7 @@
     { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
     { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
   ];
-
-  map.on('load', () => {
+  
     tiles.forEach(tile => {
       map.addSource(tile.id, {
         type: 'image',
@@ -99,67 +122,93 @@
     { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
   ];
 
-  let currentPopup = null;
-  let activeBounceIndex = null;
+  const markerElements = [];
 
-  const markerObjects = markers.map((m, idx) => {
+  markers.forEach(m => {
     const el = document.createElement('div');
     el.className = 'custom-marker';
     el.style.backgroundImage = `url(${m.img})`;
+    el.style.width = '75px';
+    el.style.height = '75px';
+    el.style.display = 'none';
+    m.el = el; // marker element 참조 저장
+
+    const popupHTML = `
+      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+        ${m.title}
+      </div>
+    `;
 
     const marker = new mapboxgl.Marker(el)
       .setLngLat([m.lng, m.lat])
+      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
 
-    m.el = el;
-    return marker;
+    markerElements.push(el);
   });
 
-  function showPopupIfNearby(userLng, userLat) {
-    let popupShown = false;
+  map.on('zoom', () => {
+    const zoom = map.getZoom();
+    markerElements.forEach(el => {
+      el.style.display = (zoom >= 16) ? 'block' : 'none';
+    });
+  });
 
-    markers.forEach((m, idx) => {
+  let userMarker = null;
+  let currentPopup = null;
+
+  function showPopupIfNearby(userLng, userLat) {
+    let nearby = false;
+    markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
-      if (distance < 70) {
+      // 바운스 효과 (50m 이내)
+      if (distance < 50) {
+        m.el.classList.add('bounce');
+      } else {
+        m.el.classList.remove('bounce');
+      }
+
+      // 팝업 조건 (20m 이내)
+      if (distance < 20) {
+        nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
+          const popupHTML = `
+            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+              ${m.title}
+            </div>
+          `;
           currentPopup = new mapboxgl.Popup()
             .setLngLat([m.lng, m.lat])
-            .setHTML(`<div class="popup-content"><a href="${m.url || '#'}" target="_blank">${m.title}</a></div>`)
+            .setHTML(popupHTML)
             .addTo(map);
         }
-
-        if (activeBounceIndex !== idx) {
-          if (activeBounceIndex !== null) markers[activeBounceIndex].el.classList.remove('bounce');
-          m.el.classList.add('bounce');
-          activeBounceIndex = idx;
-        }
-
-        popupShown = true;
       }
     });
-
-    if (!popupShown) {
-      if (currentPopup) currentPopup.remove();
+    if (!nearby && currentPopup) {
+      currentPopup.remove();
       currentPopup = null;
-      if (activeBounceIndex !== null) {
-        markers[activeBounceIndex].el.classList.remove('bounce');
-        activeBounceIndex = null;
-      }
     }
   }
 
-  let userMarker = null;
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-    map.setCenter([longitude, latitude]);
-    if (userMarker) userMarker.remove();
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundImage = 'url(dung1.gif)';
-    userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+    map.easeTo({
+      center: [longitude, latitude],
+      duration: 1000
+    });
+    if (!userMarker) {
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      el.style.backgroundImage = 'url(dung1.gif)';
+      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+    } else {
+      userMarker.setLngLat([longitude, latitude]);
+    }
     showPopupIfNearby(longitude, latitude);
+  }, (error) => {
+    console.error("Geolocation error:", error);
   });
 </script>
 </body>
