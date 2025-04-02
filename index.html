@@ -150,24 +150,40 @@
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
       if (distance < 50) {
-        m.el.style.animation = 'bounce 0.6s infinite';
+        m.el.classList.add('bounce');
       } else {
-        m.el.style.animation = 'none';
+        m.el.classList.remove('bounce');
       }
 
       if (distance < 20) {
         nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
           if (currentPopup) currentPopup.remove();
-          const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-              ${m.title}
-            </div>
-          `;
-          currentPopup = new mapboxgl.Popup()
-            .setLngLat([m.lng, m.lat])
-            .setHTML(popupHTML)
-            .addTo(map);
+          
+const popupHTML = `
+  <div class="popup-content" ${m.url ? `data-url="${m.url}"` : ''}>
+    ${m.title}
+  </div>
+`;
+
+currentPopup = new mapboxgl.Popup()
+  .setLngLat([m.lng, m.lat])
+  .setHTML(popupHTML)
+  .addTo(map);
+
+// 클릭 시 팝업 닫힘 + URL 이동
+setTimeout(() => {
+  const popupEl = document.querySelector('.popup-content');
+  if (popupEl) {
+    popupEl.addEventListener('click', () => {
+      if (currentPopup) currentPopup.remove();
+      currentPopup = null;
+      const url = popupEl.dataset.url;
+      if (url) window.open(url, '_blank');
+    });
+  }
+}, 0);
+
         }
       }
     });
