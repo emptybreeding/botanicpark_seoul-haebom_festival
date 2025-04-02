@@ -21,18 +21,13 @@
       border-radius: 0;
       pointer-events: auto;
     }
-
-    .bounce {
-      animation: bounce 1s infinite;
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
     }
 
-    @keyframes bounce {
-      0%, 100% {
-        transform: translateY(0);
-      }
-      50% {
-        transform: translateY(-10px);
-      }
+    .bounce {
+      animation: bounce 0.6s infinite;
     }
 
     .mapboxgl-popup-content {
@@ -114,83 +109,67 @@
     });
   });
 
-    const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
-    { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
-    { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
-  ];
+  const markers = [
+  { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+  { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터' },
+  { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원' },
+  { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
+];
 
-  const markerElements = [];
+let currentPopup = null;
+
+// 마커 추가 및 el 저장
+markers.forEach(m => {
+  const el = document.createElement('div');
+  el.className = 'custom-marker';
+  el.style.backgroundImage = `url(${m.img})`;
+  el.style.width = '75px';
+  el.style.height = '75px';
+
+  // el을 마커 객체에 저장
+  m.el = el;
+
+  new mapboxgl.Marker(el)
+    .setLngLat([m.lng, m.lat])
+    .addTo(map);
+});
+
+// 사용자 위치 갱신 시
+function showPopupIfNearby(userLng, userLat) {
+  let nearby = false;
 
   markers.forEach(m => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    el.style.backgroundImage = `url(${m.img})`;
-    el.style.width = '75px';
-    el.style.height = '75px';
-    el.style.display = 'none';
-    m.el = el; // marker element 참조 저장
+    const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
-    const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
-        ${m.title}
-      </div>
-    `;
-
-    const marker = new mapboxgl.Marker(el)
-      .setLngLat([m.lng, m.lat])
-      .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
-      .addTo(map);
-
-    markerElements.push(el);
-  });
-
-  map.on('zoom', () => {
-    const zoom = map.getZoom();
-    markerElements.forEach(el => {
-      el.style.display = (zoom >= 16) ? 'block' : 'none';
-    });
-  });
-
-  let userMarker = null;
-  let currentPopup = null;
-
-  function showPopupIfNearby(userLng, userLat) {
-    let nearby = false;
-    markers.forEach(m => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-  
-      if (distance < 50) {
-        if (!m.el.classList.contains('bounce')) {
-          m.el.classList.add('bounce');
-        }
-      } else {
-        m.el.classList.remove('bounce');
-      }
-  
-      if (distance < 20) {
-        nearby = true;
-        if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
-          if (currentPopup) currentPopup.remove();
-          const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-              ${m.title}
-            </div>
-          `;
-          currentPopup = new mapboxgl.Popup()
-            .setLngLat([m.lng, m.lat])
-            .setHTML(popupHTML)
-            .addTo(map);
-        }
-      }
-    });
-  
-    if (!nearby && currentPopup) {
-      currentPopup.remove();
-      currentPopup = null;
+    if (distance < 50) {
+      m.el.classList.add('bounce');  // 50m 이내면 바운스
+    } else {
+      m.el.classList.remove('bounce');  // 아니면 해제
     }
+
+    if (distance < 20) {
+      nearby = true;
+      if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
+        if (currentPopup) currentPopup.remove();
+
+        const popupHTML = `
+          <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+            ${m.title}
+          </div>
+        `;
+        currentPopup = new mapboxgl.Popup()
+          .setLngLat([m.lng, m.lat])
+          .setHTML(popupHTML)
+          .addTo(map);
+      }
+    }
+  });
+
+  if (!nearby && currentPopup) {
+    currentPopup.remove();
+    currentPopup = null;
   }
+}
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
