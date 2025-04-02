@@ -45,6 +45,15 @@
       cursor: pointer;
     }
 
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .bounce {
+      animation: bounce 0.6s infinite;
+    }
+
     .popup-content:hover {
       background: #f2f2f2;
     }
@@ -155,13 +164,18 @@ function showPopupIfNearby(userLng, userLat) {
       currentPopup.remove();
       currentPopup = null;
     }
+    markerElements.forEach(el => el.classList.remove('bounce')); // 모든 마커 bounce 제거
     return;
   }
 
-  markers.forEach(m => {
+  markers.forEach((m, i) => {
     const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-    if (distance < 70) {
+
+    const el = markerElements[i];
+    if (distance < 100) {
       nearby = true;
+      el.classList.add('bounce');
+
       if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
         if (currentPopup) currentPopup.remove();
         const popupHTML = `
@@ -174,6 +188,8 @@ function showPopupIfNearby(userLng, userLat) {
           .setHTML(popupHTML)
           .addTo(map);
       }
+    } else {
+      el.classList.remove('bounce'); // 100m 밖이면 bounce 제거
     }
   });
 
