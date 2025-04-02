@@ -20,6 +20,20 @@
       border: none;
       border-radius: 0;
       pointer-events: auto;
+      transition: transform 0.3s ease;
+    }
+
+    .bounce {
+      animation: bounce 1s infinite;
+    }
+
+    @keyframes bounce {
+      0%, 100% {
+        transform: translateY(0);
+      }
+      50% {
+        transform: translateY(-10px);
+      }
     }
 
     .mapboxgl-popup-content {
@@ -74,18 +88,7 @@
   });
 
   map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
-
+    const tiles = [...]; // 생략
     tiles.forEach(tile => {
       map.addSource(tile.id, {
         type: 'image',
@@ -102,10 +105,10 @@
   });
 
   const markers = [
-    { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터' },
-    { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원' },
-    { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
+    { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
+    { lng: 126.78971, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
+    { lng: 126.878835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
   ];
 
   const markerElements = [];
@@ -117,6 +120,7 @@
     el.style.width = '75px';
     el.style.height = '75px';
     el.style.display = 'none';
+    m.el = el; // marker element 참조 저장
 
     const popupHTML = `
       <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
@@ -146,6 +150,15 @@
     let nearby = false;
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+
+      // 바운스 효과 (50m 이내)
+      if (distance < 50) {
+        m.el.classList.add('bounce');
+      } else {
+        m.el.classList.remove('bounce');
+      }
+
+      // 팝업 조건 (20m 이내)
       if (distance < 20) {
         nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
