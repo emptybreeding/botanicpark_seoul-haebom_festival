@@ -137,36 +137,50 @@
     markerElements.forEach(el => {
       el.style.display = (zoom >= 16) ? 'block' : 'none';
     });
+    if (userMarker) {
+      const userLngLat = userMarker.getLngLat();
+      showPopupIfNearby(userLngLat.lng, userLngLat.lat); //수정한 부분으로 불필요시 삭제
   });
 
   let userMarker = null;
   let currentPopup = null;
 
-  function showPopupIfNearby(userLng, userLat) {
-    let nearby = false;
-    markers.forEach(m => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      if (distance < 70) {
-        nearby = true;
-        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
-          if (currentPopup) currentPopup.remove();
-          const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
-              ${m.title}
-            </div>
-          `;
-          currentPopup = new mapboxgl.Popup()
-            .setLngLat([m.lng, m.lat])
-            .setHTML(popupHTML)
-            .addTo(map);
-        }
-      }
-    });
-    if (!nearby && currentPopup) {
+function showPopupIfNearby(userLng, userLat) {
+  const zoom = map.getZoom();
+  let nearby = false;
+
+  if (zoom < 16) {
+    if (currentPopup) {
       currentPopup.remove();
       currentPopup = null;
     }
+    return;
   }
+
+  markers.forEach(m => {
+    const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+    if (distance < 70) {
+      nearby = true;
+      if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+        if (currentPopup) currentPopup.remove();
+        const popupHTML = `
+          <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+            ${m.title}
+          </div>
+        `;
+        currentPopup = new mapboxgl.Popup()
+          .setLngLat([m.lng, m.lat])
+          .setHTML(popupHTML)
+          .addTo(map);
+      }
+    }
+  });
+
+  if (!nearby && currentPopup) {
+    currentPopup.remove();
+    currentPopup = null;
+  }
+}
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
