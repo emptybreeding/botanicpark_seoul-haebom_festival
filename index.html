@@ -146,7 +146,7 @@
     let nearby = false;
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      if (distance < 20) {
+      if (distance < 70) {
         nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
