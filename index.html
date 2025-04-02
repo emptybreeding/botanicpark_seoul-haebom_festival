@@ -23,7 +23,7 @@
     }
 
     .bounce {
-      animation: bounce 0.6s infinite;
+      animation: bounce 1s infinite;
     }
 
     @keyframes bounce {
@@ -81,11 +81,7 @@
     zoom: 15,
     bearing: 314
   });
-  navigator.geolocation.getCurrentPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    map.setCenter([longitude, latitude]);
-  });
-  
+
   const tiles = [
     { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
     { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
@@ -153,13 +149,13 @@
     markers.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
-      if (distance < 70) {
-        m.el.classList.add('bounce');
+      if (distance < 50) {
+        m.el.style.animation = 'bounce 0.6s infinite';
       } else {
-        m.el.classList.remove('bounce');
+        m.el.style.animation = 'none';
       }
 
-      if (distance < 70) {
+      if (distance < 20) {
         nearby = true;
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
           if (currentPopup) currentPopup.remove();
