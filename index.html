@@ -3,29 +3,22 @@
 <head>
   <meta charset="utf-8" />
   <title>botanicpark_seoul-haebom_festival</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      height: 100svh; /* 모바일 safe-area 대응 */
-      overscroll-behavior: none;
-      touch-action: manipulation;
-    }
-    #map {
-      width: 100%;
-      height: 100%;
-    }
+    body, html { margin: 0; padding: 0; height: 100dvh; }
+    #map { width: 100%; height: 100%; }
 
     .custom-marker {
-      width: 75px;
-      height: 75px;
+      width: 100px;
+      height: 100px;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
+      border: none;
+      border-radius: 0;
       pointer-events: auto;
     }
 
@@ -50,43 +43,15 @@
       font-size: 1em;
       text-align: center;
       cursor: pointer;
-      min-width: 140px;
     }
 
     .popup-content:hover {
       background: #f2f2f2;
     }
-
-    @media (max-width: 480px) {
-      .popup-content {
-        font-size: 0.9rem;
-        padding: 8px 12px;
-      }
-    }
-
-    #controls {
-      position: absolute;
-      bottom: 20px;
-      right: 20px;
-      z-index: 9999;
-    }
-
-    #locate-btn {
-      background: white;
-      border: none;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.25);
-      padding: 12px 14px;
-      font-size: 16px;
-      cursor: pointer;
-    }
   </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="controls">
-  <button id="locate-btn">📍 내 위치</button>
-</div>
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
@@ -136,7 +101,7 @@
     });
   });
 
-  const markers = [
+    const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
     { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
@@ -154,7 +119,7 @@
     el.style.display = 'none';
 
     const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
         ${m.title}
       </div>
     `;
@@ -180,7 +145,6 @@
 
   let userMarker = null;
   let currentPopup = null;
-  let lastUserLocation = null;
 
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
@@ -196,9 +160,9 @@
 
     markers.forEach((m, i) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      const el = markerElements[i];
 
-      if (distance < 20) {
+      const el = markerElements[i];
+      if (distance < 70) {
         nearby = true;
 
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
@@ -224,7 +188,6 @@
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-    lastUserLocation = [longitude, latitude];
     map.easeTo({
       center: [longitude, latitude],
       duration: 1000
@@ -240,22 +203,6 @@
     showPopupIfNearby(longitude, latitude);
   }, (error) => {
     console.error("Geolocation error:", error);
-  }, {
-    enableHighAccuracy: true,
-    maximumAge: 10000,
-    timeout: 10000
-  });
-
-  document.getElementById('locate-btn').addEventListener('click', () => {
-    if (lastUserLocation) {
-      map.easeTo({
-        center: lastUserLocation,
-        zoom: 17,
-        duration: 800
-      });
-    } else {
-      alert("사용자 위치를 찾고 있습니다...");
-    }
   });
 </script>
 </body>
