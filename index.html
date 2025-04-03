@@ -20,6 +20,17 @@
       border: none;
       border-radius: 0;
       pointer-events: auto;
+      transform-origin: bottom center;
+      will-change: transform;
+    }
+    
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-15px); }
+    }
+    
+    .bounce {
+      animation: bounce 0.6s infinite;
     }
 
     .mapboxgl-popup-content {
@@ -49,14 +60,6 @@
       background: #f2f2f2;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    .bounce {
-      animation: bounce 0.6s infinite;
-    }
   </style>
 </head>
 <body>
