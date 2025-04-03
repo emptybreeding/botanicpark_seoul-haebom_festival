@@ -142,7 +142,7 @@
       </div>
     `;
 
-    new mapboxgl.Marker(el)
+    new mapboxgl.Marker(el, { offset: [0, -37.5] })
       .setLngLat([m.lng, m.lat])
       .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
@@ -169,10 +169,8 @@
     let nearby = false;
 
     if (zoom < 16) {
-      if (currentPopup) {
-        currentPopup.remove();
-        currentPopup = null;
-      }
+      if (currentPopup) currentPopup.remove();
+      currentPopup = null;
       markerElements.forEach(el => el.classList.remove('bounce'));
       return;
     }
@@ -183,7 +181,6 @@
 
       if (distance < 50) {
         nearby = true;
-
         markerElements.forEach(otherEl => otherEl.classList.remove('bounce'));
         el.classList.add('bounce');
 
@@ -224,13 +221,19 @@
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
 
-      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+      userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] })
+        .setLngLat([longitude, latitude])
+        .addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
     showPopupIfNearby(longitude, latitude);
   }, (error) => {
     console.error("Geolocation error:", error);
+  }, {
+    enableHighAccuracy: true,
+    maximumAge: 10000,
+    timeout: 10000
   });
 </script>
 </body>
