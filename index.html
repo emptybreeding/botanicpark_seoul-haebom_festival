@@ -158,7 +158,7 @@
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
-
+  
     if (zoom < 16) {
       if (currentPopup) {
         currentPopup.remove();
@@ -167,15 +167,18 @@
       markerElements.forEach(el => el.classList.remove('bounce'));
       return;
     }
-
+  
     markers.forEach((m, i) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
       const el = markerElements[i];
-
+  
       if (distance < 50) {
         nearby = true;
+  
+        // 바운스 클래스는 좌표 기준으로 적용
+        markerElements.forEach(otherEl => otherEl.classList.remove('bounce'));
         el.classList.add('bounce');
-
+  
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
@@ -188,14 +191,13 @@
             .setHTML(popupHTML)
             .addTo(map);
         }
-      } else {
-        el.classList.remove('bounce');
       }
     });
-
+  
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
+      markerElements.forEach(el => el.classList.remove('bounce'));
     }
   }
 
