@@ -12,14 +12,29 @@
     #map { width: 100%; height: 100%; }
 
     .custom-marker {
-      width: 100px;
-      height: 100px;
+      width: 75px;
+      height: 75px;
+      background: none;
+      pointer-events: auto;
+    }
+
+    .marker-inner {
+      width: 100%;
+      height: 100%;
       background-size: contain;
       background-repeat: no-repeat;
       background-position: center;
-      border: none;
-      border-radius: 0;
-      pointer-events: auto;
+      transform-origin: bottom center;
+      will-change: transform;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .bounce {
+      animation: bounce 0.6s infinite;
     }
 
     .mapboxgl-popup-content {
@@ -101,7 +116,7 @@
     });
   });
 
-    const markers = [
+  const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
     { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
@@ -113,34 +128,25 @@
   markers.forEach(m => {
     const el = document.createElement('div');
     el.className = 'custom-marker';
-    el.style.backgroundImage = `url(${m.img})`;
-    el.style.width = '75px';
-    el.style.height = '75px';
-    el.style.display = 'none';
+
+    const inner = document.createElement('div');
+    inner.className = 'marker-inner';
+    inner.style.backgroundImage = `url(${m.img})`;
+
+    el.appendChild(inner);
 
     const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick=\"window.open('${m.url}', '_blank')\"` : ''}>
+      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
         ${m.title}
       </div>
     `;
 
-    const marker = new mapboxgl.Marker(el)
+    new mapboxgl.Marker(el, { offset: [0, -37.5] })
       .setLngLat([m.lng, m.lat])
       .setPopup(new mapboxgl.Popup({ offset: 25 }).setHTML(popupHTML))
       .addTo(map);
 
-    markerElements.push(el);
-  });
-
-  map.on('zoom', () => {
-    const zoom = map.getZoom();
-    markerElements.forEach(el => {
-      el.style.display = (zoom >= 16) ? 'block' : 'none';
-    });
-    if (userMarker) {
-      const userLngLat = userMarker.getLngLat();
-      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
-    }
+    markerElements.push({ el, inner, lng: m.lng, lat: m.lat });
   });
 
   let userMarker = null;
@@ -151,20 +157,25 @@
     let nearby = false;
 
     if (zoom < 16) {
-      if (currentPopup) {
-        currentPopup.remove();
-        currentPopup = null;
-      }
+      markerElements.forEach(m => m.el.style.display = 'none');
+      markerElements.forEach(m => m.inner.classList.remove('bounce'));
+      if (currentPopup) currentPopup.remove();
+      currentPopup = null;
       return;
     }
 
-    markers.forEach((m, i) => {
+    markerElements.forEach(m => {
+      m.el.style.display = 'block';
+      m.inner.classList.remove('bounce');
+
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
-      const el = markerElements[i];
+      if (distance < 100) {
+        m.inner.classList.add('bounce');
+      }
+
       if (distance < 70) {
         nearby = true;
-
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
           if (currentPopup) currentPopup.remove();
           const popupHTML = `
@@ -192,17 +203,30 @@
       center: [longitude, latitude],
       duration: 1000
     });
+
     if (!userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
-      el.style.backgroundImage = 'url(dung1.gif)';
-      userMarker = new mapboxgl.Marker(el).setLngLat([longitude, latitude]).addTo(map);
+
+      const inner = document.createElement('div');
+      inner.className = 'marker-inner';
+      inner.style.backgroundImage = 'url(dung1.gif)';
+      el.appendChild(inner);
+
+      userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] })
+        .setLngLat([longitude, latitude])
+        .addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
+
     showPopupIfNearby(longitude, latitude);
   }, (error) => {
     console.error("Geolocation error:", error);
+  }, {
+    enableHighAccuracy: true,
+    maximumAge: 10000,
+    timeout: 10000
   });
 </script>
 </body>
