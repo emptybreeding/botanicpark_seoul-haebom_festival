@@ -31,11 +31,14 @@
       will-change: transform;
     }
 
-    .blue-dot {
-      width: 16px;
-      height: 16px;
-      background-color: blue;
-      border-radius: 50%;
+    .blue-marker {
+      width: 24px;
+      height: 24px;
+      background-color: rgba(0, 123, 255, 0.6);
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(45deg);
+      box-shadow: 0 0 6px rgba(0, 0, 255, 0.3);
+      border: 2px solid white;
       visibility: hidden;
       opacity: 0;
       transition: visibility 0s, opacity 0.3s ease-in-out;
