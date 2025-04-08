@@ -34,7 +34,7 @@
     .blue-dot {
       width: 10px;
       height: 10px;
-      background-color: rgba(0, 0, 255, 0.4); /* 중심 원 색상 */
+      background-color: rgba(0, 0, 255, 0.4);
       border: 2px solid white;
       border-radius: 50%;
       box-shadow:
@@ -70,7 +70,7 @@
       border-radius: 50px;
       padding: 10px 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      color:#448e7a;
+      color: #448e7a;
       font-weight: 600;
       font-size: 1.4em;
       text-align: center;
@@ -107,6 +107,7 @@
   let userMarker = null;
   let currentPopup = null;
   let fixedPopup = null;
+  let mapIsLoaded = false;
 
   const markerElements = [];
   const blueDotMarkers = [];
@@ -125,6 +126,8 @@
   });
 
   map.on('load', () => {
+    mapIsLoaded = true;
+
     const tiles = [
       { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
       { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
@@ -136,116 +139,24 @@
       { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
       { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
     ];
+
     tiles.forEach(tile => {
       map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
       map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
     });
 
-    updateMarkerVisibility(); // 초기 줌에 따른 표시
+    updateMarkerVisibility();
   });
 
-  const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원' },
-    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원' },
-    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원' },
-    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨' },
-    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어' },
-    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원' }
-  ];
-
-  markers.forEach(m => {
-    // 기본 마커
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    const inner = document.createElement('div');
-    inner.className = 'marker-inner';
-    inner.style.backgroundImage = `url(${m.img})`;
-    el.appendChild(inner);
-    const marker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([m.lng, m.lat]).addTo(map);
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
-
-    // 파란 점 마커
-    const blueDot = document.createElement('div');
-    blueDot.className = 'blue-dot';
-    const blueMarker = new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
-    blueDotMarkers.push(blueDot);
-
-    el.addEventListener('click', () => {
-      if (fixedPopup) fixedPopup.remove(); // 기존 클릭 팝업 제거
-      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      fixedPopup = new mapboxgl.Popup({ offset: [0, -50] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(html)
-        .addTo(map);
-    });
-    
-    el.addEventListener('touchstart', () => {
-      if (fixedPopup) fixedPopup.remove(); // 터치 이벤트에도 동일 처리
-      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      fixedPopup = new mapboxgl.Popup({ offset: [0, -50] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(html)
-        .addTo(map);
-    });
-  });
-
-  function updateMarkerVisibility() {
-    const zoom = map.getZoom();
-    markerElements.forEach((m, i) => {
-      if (zoom >= 16) {
-        m.el.style.visibility = 'visible';
-        m.el.style.opacity = 1;
-        blueDotMarkers[i].style.visibility = 'hidden';
-        blueDotMarkers[i].style.opacity = 0;
-      } else {
-        m.el.style.visibility = 'hidden';
-        m.el.style.opacity = 0;
-        blueDotMarkers[i].style.visibility = 'visible';
-        blueDotMarkers[i].style.opacity = 1;
-      }
-    });
-  }
-
-  function showPopupIfNearby(userLng, userLat) {
-    const zoom = map.getZoom();
-    let nearby = false;
-  
-    markerElements.forEach(m => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-  
-      if (zoom >= 16) {
-        m.inner.classList.remove('bounce');
-        if (distance < 100) m.inner.classList.add('bounce');
-  
-        if (distance < 70) {
-          nearby = true;
-          // 현재 자동 팝업만 다룸. 클릭 팝업(fixedPopup)은 무관.
-          if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
-            if (currentPopup) currentPopup.remove();
-            const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
-              .setLngLat([m.lng, m.lat])
-              .setHTML(popupHTML)
-              .addTo(map);
-          }
-        }
-      } else {
-        m.inner.classList.remove('bounce');
-      }
-    });
-  
-    if (!nearby && currentPopup) {
-      currentPopup.remove();
-      currentPopup = null;
-    }
-  }
-
+  // 위치 추적 (안정화 적용)
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-    if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
 
-    if (!userMarker) {
+    if (mapIsLoaded && !isUserInteracting) {
+      map.easeTo({ center: [longitude, latitude], duration: 1000 });
+    }
+
+    if (mapIsLoaded && !userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
       el.style.visibility = 'visible';
@@ -255,11 +166,16 @@
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
       userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([longitude, latitude]).addTo(map);
-    } else {
+    } else if (userMarker) {
       userMarker.setLngLat([longitude, latitude]);
     }
-    showPopupIfNearby(longitude, latitude);
-  }, error => console.error("Geolocation error:", error), {
+
+    if (mapIsLoaded) {
+      showPopupIfNearby(longitude, latitude);
+    }
+  }, error => {
+    console.error("Geolocation error:", error);
+  }, {
     enableHighAccuracy: true,
     maximumAge: 10000,
     timeout: 10000
