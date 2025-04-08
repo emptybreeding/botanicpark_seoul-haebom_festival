@@ -16,6 +16,9 @@
       height: 75px;
       background: none;
       pointer-events: auto;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
     }
 
     .marker-inner {
@@ -87,12 +90,25 @@
   });
 
   let isUserInteracting = false;
+  let userMarker = null;
+  let currentPopup = null;
+
+  // 사용자 제스처 인식
   map.on('dragstart', () => isUserInteracting = true);
   map.on('zoomstart', () => isUserInteracting = true);
   map.on('touchstart', () => isUserInteracting = true);
   map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
-  map.on('zoomend', () => setTimeout(() => isUserInteracting = false, 2000));
 
+  // 줌 이벤트: 마커 표시 조건 적용
+  map.on('zoomend', () => {
+    setTimeout(() => isUserInteracting = false, 2000);
+    if (userMarker) {
+      const userLngLat = userMarker.getLngLat();
+      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
+    }
+  });
+
+  // ✅ 타일 이미지 로딩
   map.on('load', () => {
     const tiles = [
       { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
@@ -121,6 +137,7 @@
     });
   });
 
+  // 📍 마커 정의
   const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
@@ -129,8 +146,6 @@
   ];
 
   const markerElements = [];
-  let userMarker = null;
-  let currentPopup = null;
 
   markers.forEach(m => {
     const el = document.createElement('div');
@@ -142,11 +157,7 @@
     el.appendChild(inner);
 
     el.addEventListener('click', () => {
-      const popupHTML = `
-        <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-          ${m.title || '제목 없음'}
-        </div>
-      `;
+      const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
       new mapboxgl.Popup({ offset: [0, -50] })
         .setLngLat([m.lng, m.lat])
         .setHTML(popupHTML)
@@ -154,11 +165,7 @@
     });
 
     el.addEventListener('touchstart', () => {
-      const popupHTML = `
-        <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-          ${m.title || '제목 없음'}
-        </div>
-      `;
+      const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
       new mapboxgl.Popup({ offset: [0, -50] })
         .setLngLat([m.lng, m.lat])
         .setHTML(popupHTML)
@@ -184,25 +191,13 @@
         m.el.style.opacity = 1;
 
         m.inner.classList.remove('bounce');
-        if (distance < 100) {
-          m.inner.classList.add('bounce');
-        }
+        if (distance < 100) m.inner.classList.add('bounce');
 
         if (distance < 70) {
           nearby = true;
-
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
             if (currentPopup) currentPopup.remove();
-
-            const safeTitle = m.title || '제목 없음';
-            const safeUrl = m.url ? `onclick="window.open('${m.url}', '_blank')"` : '';
-
-            const popupHTML = `
-              <div class="popup-content" ${safeUrl}>
-                ${safeTitle}
-              </div>
-            `;
-
+            const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
             currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
               .setLngLat([m.lng, m.lat])
               .setHTML(popupHTML)
@@ -231,6 +226,9 @@
     if (!userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
+      el.style.visibility = 'visible';
+      el.style.opacity = 1;
+
       const inner = document.createElement('div');
       inner.className = 'marker-inner';
       inner.style.backgroundImage = 'url(dung1.gif)';
