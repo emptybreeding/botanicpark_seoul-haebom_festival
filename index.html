@@ -16,6 +16,9 @@
       height: 75px;
       background: none;
       pointer-events: auto;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
     }
 
     .marker-inner {
@@ -93,34 +96,6 @@
   map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
   map.on('zoomend', () => setTimeout(() => isUserInteracting = false, 2000));
 
-  map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
-
-    tiles.forEach(tile => {
-      map.addSource(tile.id, {
-        type: 'image',
-        url: tile.url,
-        coordinates: tile.coords
-      });
-      map.addLayer({
-        id: tile.id,
-        type: 'raster',
-        source: tile.id,
-        paint: { 'raster-opacity': 1 }
-      });
-    });
-  });
-
   const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
@@ -180,7 +155,8 @@
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
       if (zoom >= 16) {
-        m.el.style.display = 'block';
+        m.el.style.visibility = 'visible';
+        m.el.style.opacity = 1;
 
         m.inner.classList.remove('bounce');
         if (distance < 100) {
@@ -193,12 +169,9 @@
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
             if (currentPopup) currentPopup.remove();
 
-            const safeTitle = m.title || '제목 없음';
-            const safeUrl = m.url ? `onclick="window.open('${m.url}', '_blank')"` : '';
-
             const popupHTML = `
-              <div class="popup-content" ${safeUrl}>
-                ${safeTitle}
+              <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+                ${m.title || '제목 없음'}
               </div>
             `;
 
@@ -209,7 +182,8 @@
           }
         }
       } else {
-        m.el.style.display = 'none';
+        m.el.style.visibility = 'hidden';
+        m.el.style.opacity = 0;
       }
     });
 
@@ -223,7 +197,7 @@
     const { latitude, longitude } = position.coords;
 
     if (!isUserInteracting) {
-      map.easeTo({ center: [longitude, latitude], duration: 1000 });
+      map.easeTo({ center: [longitude, latitude], zoom: 16, duration: 1000 });
     }
 
     if (!userMarker) {
