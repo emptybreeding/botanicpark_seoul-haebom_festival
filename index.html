@@ -236,7 +236,7 @@
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
             if (currentPopup) currentPopup.remove();
             const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
+            currentPopup = new mapboxgl.Popup({ offset: [0, -70] })
               .setLngLat([m.lng, m.lat])
               .setHTML(popupHTML)
               .addTo(map);
