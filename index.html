@@ -175,15 +175,21 @@
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
-
+  
     markerElements.forEach(m => {
-      m.inner.classList.remove('bounce');
-
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
-      if (zoom >= 16 && distance < 100) {
-        m.inner.classList.add('bounce');
-
+  
+      // 마커 표시 여부 제어
+      if (zoom >= 16) {
+        m.el.style.display = 'block';
+  
+        // 바운스 처리
+        m.inner.classList.remove('bounce');
+        if (distance < 100) {
+          m.inner.classList.add('bounce');
+        }
+  
+        // 팝업 처리
         if (distance < 70) {
           nearby = true;
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
@@ -199,9 +205,11 @@
               .addTo(map);
           }
         }
+      } else {
+        m.el.style.display = 'none';
       }
     });
-
+  
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
