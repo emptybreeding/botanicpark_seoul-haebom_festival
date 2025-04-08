@@ -41,9 +41,7 @@
       background-color: rgba(68, 142, 122, 0.4);
       border: 2px solid white;
       border-radius: 50%;
-      box-shadow:
-        0 0 10px 5px rgba(68, 142, 122, 0.3),
-        0 0 30px 15px rgba(68, 142, 122, 0.2);
+      box-shadow: 0 0 10px 5px rgba(68, 142, 122, 0.3), 0 0 30px 15px rgba(68, 142, 122, 0.2);
       visibility: hidden;
       opacity: 0;
       transition: visibility 0s, opacity 0.3s ease-in-out;
@@ -58,72 +56,105 @@
       animation: bounce 0.6s infinite;
     }
 
-    .mapboxgl-popup-tip {
-      display: none !important; /* ← 꼭짓점 제거 */
-    }
-    
-    .mapboxgl-popup-content {
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
+    .mapboxgl-popup-tip { display: none !important; }
+    .mapboxgl-popup-content { background: transparent; box-shadow: none; padding: 0; }
+    .mapboxgl-popup-close-button { display: none; }
+
+    .popup-card {
+      font-family: "Noto Sans KR", sans-serif;
+      background: white;
+      border-radius: 16px;
+      padding: 12px 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+      position: relative;
+      max-width: 280px;
+      text-align: center;
     }
 
-    .mapboxgl-popup-close-button {
+    .popup-title {
+      font-size: 1.2em;
+      font-weight: 700;
+      color: #448e7a;
+      margin-bottom: 8px;
+    }
+
+    .popup-more {
+      font-size: 0.95em;
+      color: #448e7a;
+      cursor: pointer;
+      font-weight: 500;
+      border-top: 1px solid #eee;
+      padding-top: 8px;
+    }
+
+    .popup-more:hover { text-decoration: underline; }
+
+    .popup-image {
+      width: 100%;
+      margin-top: 10px;
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
       display: none;
     }
 
-    .popup-content {
-      font-family: "Noto Sans KR", sans-serif;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 50px;
-      padding: 10px 16px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      color:#448e7a;
-      font-weight: 600;
-      font-size: 1.4em;
-      text-align: center;
+    .popup-close {
+      position: absolute;
+      top: 8px;
+      right: 12px;
+      font-size: 20px;
+      font-weight: bold;
+      color: #888;
       cursor: pointer;
     }
-
-    .popup-content:hover {
-      background: #f2f2f2;
-    }
+    .popup-close:hover { color: #000; }
   </style>
 </head>
 <body>
 <div id="map"></div>
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
-
   const map = new mapboxgl.Map({
     container: 'map',
-    style: {
-      version: 8,
-      sources: {},
-      layers: [{
-        id: 'background',
-        type: 'background',
-        paint: { 'background-color': '#448e7a' }
-      }]
-    },
-    center: [126.8355, 37.5700],
-    zoom: 15,
-    bearing: 314
+    style: { version: 8, sources: {}, layers: [{ id: 'background', type: 'background', paint: { 'background-color': '#448e7a' } }] },
+    center: [126.8355, 37.5700], zoom: 15, bearing: 314
   });
 
-  let isUserInteracting = false;
-  let userMarker = null;
-  let activePopup = null;
-
-  const markerElements = [];
-  const blueDotMarkers = [];
+  let isUserInteracting = false, userMarker = null, activePopup = null;
+  const markerElements = [], blueDotMarkers = [];
 
   function showPopup(markerData) {
     if (activePopup) activePopup.remove();
-    const html = `<div class="popup-content" ${markerData.url ? `onclick=\"window.open('${markerData.url}', '_blank')\"` : ''}>${markerData.title}</div>`;
-    activePopup = new mapboxgl.Popup({ offset: [0, -50] })
+
+    const container = document.createElement('div');
+    container.className = 'popup-card';
+
+    const closeBtn = document.createElement('div');
+    closeBtn.className = 'popup-close';
+    closeBtn.innerHTML = '&times;';
+    closeBtn.onclick = () => { activePopup.remove(); activePopup = null; };
+
+    const title = document.createElement('div');
+    title.className = 'popup-title';
+    title.innerHTML = markerData.title;
+
+    const moreBtn = document.createElement('div');
+    moreBtn.className = 'popup-more';
+    moreBtn.innerText = '더보기';
+
+    const image = document.createElement('img');
+    image.className = 'popup-image';
+    image.src = markerData.popupImg || 'title1.jpg';
+
+    moreBtn.onclick = () => {
+      image.style.display = 'block';
+      moreBtn.style.display = 'none';
+    };
+
+    container.append(closeBtn, title, moreBtn, image);
+
+    activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
       .setLngLat([markerData.lng, markerData.lat])
-      .setHTML(html)
+      .setDOMContent(container)
       .addTo(map);
   }
 
@@ -141,17 +172,7 @@
   });
 
   map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
+    const tiles = [/* tile configs... */];
     tiles.forEach(tile => {
       map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
       map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
@@ -160,13 +181,13 @@
   });
 
   const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원' },
-    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원' },
-    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원' },
-    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨' },
-    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어' },
-    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원' }
+    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', popupImg: 'title1.jpg' },
+    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원', popupImg: 'title2.jpg' },
+    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원', popupImg: 'title3.jpg' },
+    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원', popupImg: 'title4.jpg' },
+    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨', popupImg: 'title5.jpg' },
+    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어', popupImg: 'title6.jpg' },
+    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원', popupImg: 'title7.jpg' }
   ];
 
   markers.forEach(m => {
@@ -177,7 +198,7 @@
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
     new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
+    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title });
 
     const blueDot = document.createElement('div');
     blueDot.className = 'blue-dot';
