@@ -82,16 +82,18 @@
       font-family: "Noto Sans KR", sans-serif;
     }
 
-    .popup-image {
-      width: 100%;
-      border-radius: 16px;
-      margin-bottom: 10px;
-    }
-
     .popup-title {
       font-weight: 600;
       font-size: 1.2em;
       color: #448e7a;
+      margin-bottom: 10px;
+    }
+
+    .more-link {
+      color: #448e7a;
+      font-size: 0.9em;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 </head>
@@ -125,16 +127,12 @@
 
   function showPopup(markerData, index) {
     if (activePopup) activePopup.remove();
-
-    const imageFile = `title${index + 1}.png`;
-
     const html = `
       <div class="popup-card">
-        <img src="${imageFile}" alt="popup image" class="popup-image" />
         <div class="popup-title">${markerData.title}</div>
+        <div class="more-link" onclick="window.open('title${index + 1}.png', '_blank')">더보기</div>
       </div>
     `;
-
     activePopup = new mapboxgl.Popup({ offset: [0, -10] })
       .setLngLat([markerData.lng, markerData.lat])
       .setHTML(html)
@@ -154,9 +152,7 @@
     }
   });
 
-  map.on('load', () => {
-    updateMarkerVisibility();
-  });
+  map.on('load', () => updateMarkerVisibility());
 
   const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원' },
