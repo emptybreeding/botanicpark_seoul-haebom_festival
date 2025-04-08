@@ -38,12 +38,12 @@
     .blue-dot {
       width: 10px;
       height: 10px;
-      background-color: rgba(0, 0, 255, 0.4);
+      background-color: rgba(68, 142, 122, 0.4); /* #448e7a → rgba(68, 142, 122, 0.4) */
       border: 2px solid white;
       border-radius: 50%;
       box-shadow:
-        0 0 10px 5px rgba(0, 0, 255, 0.3),
-        0 0 30px 15px rgba(0, 0, 255, 0.2);
+        0 0 10px 5px rgba(68, 142, 122, 0.3),
+        0 0 30px 15px rgba(68, 142, 122, 0.2);
       visibility: hidden;
       opacity: 0;
       transition: visibility 0s, opacity 0.3s ease-in-out;
@@ -176,7 +176,7 @@
     inner.className = 'marker-inner';
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
-    new mapboxgl.Marker(el, { offset: [0, 0] }).setLngLat([m.lng, m.lat]).addTo(map);
+    new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
     markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
 
     const blueDot = document.createElement('div');
@@ -242,7 +242,7 @@
       inner.className = 'marker-inner user-marker-inner';
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
-      userMarker = new mapboxgl.Marker(el, { offset: [0, 0] }).setLngLat([longitude, latitude]).addTo(map);
+      userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
