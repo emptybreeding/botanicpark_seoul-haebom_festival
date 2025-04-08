@@ -30,6 +30,7 @@
       transform-origin: bottom center;
       will-change: transform;
     }
+
     .user-marker-inner {
       width: 130px;
       height: 130px;
@@ -41,53 +42,55 @@
       background-color: rgba(68, 142, 122, 0.4);
       border: 2px solid white;
       border-radius: 50%;
-      box-shadow:
-        0 0 10px 5px rgba(68, 142, 122, 0.3),
-        0 0 30px 15px rgba(68, 142, 122, 0.2);
+      box-shadow: 0 0 10px 5px rgba(68, 142, 122, 0.3), 0 0 30px 15px rgba(68, 142, 122, 0.2);
       visibility: hidden;
       opacity: 0;
       transition: visibility 0s, opacity 0.3s ease-in-out;
     }
 
-    .overlay-card {
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+
+    .bounce {
+      animation: bounce 0.6s infinite;
+    }
+
+    .image-card {
       position: absolute;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
-      background: white;
-      border-radius: 20px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      width: 90%;
-      max-width: 400px;
       z-index: 9999;
-      display: none;
+      width: 320px;
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.2);
       overflow: hidden;
+      font-family: 'Noto Sans KR', sans-serif;
     }
 
-    .overlay-card img {
+    .image-card img {
       width: 100%;
       display: block;
     }
 
-    .overlay-close {
+    .image-card .close-button {
       position: absolute;
-      top: 10px;
-      right: 15px;
-      font-size: 24px;
+      top: 8px;
+      right: 12px;
+      background: #fff;
+      border: none;
+      font-size: 20px;
       font-weight: bold;
-      color: #555;
       cursor: pointer;
-      z-index: 10000;
     }
   </style>
 </head>
 <body>
 <div id="map"></div>
-<div id="imageCard" class="overlay-card">
-  <div class="overlay-close" onclick="closeCard()">&times;</div>
-  <img id="cardImage" src="" alt="card image">
-</div>
-
+<div id="imageCardContainer"></div>
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
@@ -107,49 +110,58 @@
     bearing: 314
   });
 
-  let isUserInteracting = false;
-  let userMarker = null;
-  const markerElements = [];
-  const blueDotMarkers = [];
-
-  const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '푸른꿈의 정원', image: 'title1.png' },
-    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '맞이정원', image: 'title2.png' },
-    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '구름정원', image: 'title3.png' },
-    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '해봄정원', image: 'title4.png' },
-    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '기업쇼륨', image: 'title5.png' },
-    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '바이오월 페어', image: 'title6.png' },
-    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '베란다 정원', image: 'title7.png' }
-  ];
-
-  function showCard(imagePath) {
-    document.getElementById('cardImage').src = imagePath;
-    document.getElementById('imageCard').style.display = 'block';
-  }
-
-  function closeCard() {
-    document.getElementById('imageCard').style.display = 'none';
-  }
+  let markerElements = [], blueDotMarkers = [];
 
   map.on('load', () => {
-    markers.forEach((m, i) => {
-      const el = document.createElement('div');
-      el.className = 'custom-marker';
-      const inner = document.createElement('div');
-      inner.className = 'marker-inner';
-      inner.style.backgroundImage = `url(${m.img})`;
-      el.appendChild(inner);
-      new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
-      markerElements.push({ el, inner, ...m });
-
-      const blueDot = document.createElement('div');
-      blueDot.className = 'blue-dot';
-      new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
-      blueDotMarkers.push(blueDot);
-
-      el.addEventListener('click', () => showCard(m.image));
+    const tiles = [
+      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
+      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
+      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
+      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
+      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
+      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
+      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
+      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
+      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
+    ];
+    tiles.forEach(tile => {
+      map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
+      map.addLayer({ id: tile.id, type: 'raster', source: tile.id });
     });
   });
+
+  const markers = [
+    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '푸른꿈의 정원' },
+    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '맞이정원' },
+    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '구름정원' },
+    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '해봄정원' },
+    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '기업쇼륨' },
+    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '바이오월 페어' },
+    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '베란다 정원' }
+  ];
+
+  markers.forEach((m, i) => {
+    const el = document.createElement('div');
+    el.className = 'custom-marker';
+    const inner = document.createElement('div');
+    inner.className = 'marker-inner';
+    inner.style.backgroundImage = `url(${m.img})`;
+    el.appendChild(inner);
+    new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
+    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title });
+
+    el.addEventListener('click', () => showImageCard(i));
+  });
+
+  function showImageCard(index) {
+    const container = document.getElementById('imageCardContainer');
+    container.innerHTML = `
+      <div class="image-card">
+        <button class="close-button" onclick="document.getElementById('imageCardContainer').innerHTML = ''">&times;</button>
+        <img src="title${index + 1}.png" alt="Card Image">
+      </div>
+    `;
+  }
 </script>
 </body>
 </html>
