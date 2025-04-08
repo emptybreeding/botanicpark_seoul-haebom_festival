@@ -59,9 +59,9 @@
     }
 
     .mapboxgl-popup-tip {
-      display: none !important; /* ← 꼭짓점 제거 */
+      display: none !important;
     }
-    
+
     .mapboxgl-popup-content {
       background: transparent;
       box-shadow: none;
@@ -72,21 +72,26 @@
       display: none;
     }
 
-    .popup-content {
-      font-family: "Noto Sans KR", sans-serif;
+    .popup-card {
       background: rgba(255, 255, 255, 0.9);
-      border-radius: 50px;
-      padding: 10px 16px;
+      border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      color:#448e7a;
-      font-weight: 600;
-      font-size: 1.4em;
+      padding: 12px;
+      width: 200px;
       text-align: center;
-      cursor: pointer;
+      font-family: "Noto Sans KR", sans-serif;
     }
 
-    .popup-content:hover {
-      background: #f2f2f2;
+    .popup-image {
+      width: 100%;
+      border-radius: 16px;
+      margin-bottom: 10px;
+    }
+
+    .popup-title {
+      font-weight: 600;
+      font-size: 1.2em;
+      color: #448e7a;
     }
   </style>
 </head>
@@ -118,9 +123,18 @@
   const markerElements = [];
   const blueDotMarkers = [];
 
-  function showPopup(markerData) {
+  function showPopup(markerData, index) {
     if (activePopup) activePopup.remove();
-    const html = `<div class="popup-content" ${markerData.url ? `onclick=\"window.open('${markerData.url}', '_blank')\"` : ''}>${markerData.title}</div>`;
+
+    const imageFile = `title${index + 1}.png`;
+
+    const html = `
+      <div class="popup-card">
+        <img src="${imageFile}" alt="popup image" class="popup-image" />
+        <div class="popup-title">${markerData.title}</div>
+      </div>
+    `;
+
     activePopup = new mapboxgl.Popup({ offset: [0, -10] })
       .setLngLat([markerData.lng, markerData.lat])
       .setHTML(html)
@@ -141,26 +155,11 @@
   });
 
   map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
-    tiles.forEach(tile => {
-      map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
-      map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
-    });
     updateMarkerVisibility();
   });
 
   const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원' },
     { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원' },
     { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원' },
     { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원' },
@@ -169,7 +168,7 @@
     { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원' }
   ];
 
-  markers.forEach(m => {
+  markers.forEach((m, i) => {
     const el = document.createElement('div');
     el.className = 'custom-marker';
     const inner = document.createElement('div');
@@ -177,15 +176,15 @@
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
     new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
+    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title });
 
     const blueDot = document.createElement('div');
     blueDot.className = 'blue-dot';
     new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
     blueDotMarkers.push(blueDot);
 
-    el.addEventListener('click', () => showPopup(m));
-    el.addEventListener('touchstart', () => showPopup(m));
+    el.addEventListener('click', () => showPopup(m, i));
+    el.addEventListener('touchstart', () => showPopup(m, i));
   });
 
   function updateMarkerVisibility() {
@@ -208,7 +207,7 @@
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
-    markerElements.forEach(m => {
+    markerElements.forEach((m, i) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
       if (zoom >= 16) {
         m.inner.classList.remove('bounce');
@@ -216,7 +215,7 @@
         if (distance < 70) {
           nearby = true;
           if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
-            showPopup(m);
+            showPopup(m, i);
           }
         }
       } else {
