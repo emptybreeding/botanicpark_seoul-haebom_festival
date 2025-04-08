@@ -71,7 +71,7 @@
       padding: 10px 14px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       color:#448e7a;
-      font-weight: 800;
+      font-weight: 600;
       font-size: 1.4em;
       text-align: center;
       cursor: pointer;
@@ -106,6 +106,7 @@
   let isUserInteracting = false;
   let userMarker = null;
   let currentPopup = null;
+  let fixedPopup = null;
 
   const markerElements = [];
   const blueDotMarkers = [];
@@ -207,7 +208,7 @@
         if (distance < 100) m.inner.classList.add('bounce');
         if (distance < 70) {
           nearby = true;
-          if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+          if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
             if (currentPopup) currentPopup.remove();
             const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
             currentPopup = new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(popupHTML).addTo(map);
