@@ -49,56 +49,45 @@
       transition: visibility 0s, opacity 0.3s ease-in-out;
     }
 
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
-    }
-
-    .bounce {
-      animation: bounce 0.6s infinite;
-    }
-
-    .mapboxgl-popup-tip {
-      display: none !important;
-    }
-
-    .mapboxgl-popup-content {
-      background: transparent;
-      box-shadow: none;
-      padding: 0;
-    }
-
-    .mapboxgl-popup-close-button {
-      display: none;
-    }
-
-    .popup-card {
-      background: rgba(255, 255, 255, 0.9);
+    .overlay-card {
+      position: absolute;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: white;
       border-radius: 20px;
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      padding: 12px;
-      width: 200px;
-      text-align: center;
-      font-family: "Noto Sans KR", sans-serif;
+      width: 90%;
+      max-width: 400px;
+      z-index: 9999;
+      display: none;
+      overflow: hidden;
     }
 
-    .popup-title {
-      font-weight: 600;
-      font-size: 1.2em;
-      color: #448e7a;
-      margin-bottom: 10px;
+    .overlay-card img {
+      width: 100%;
+      display: block;
     }
 
-    .more-link {
-      color: #448e7a;
-      font-size: 0.9em;
-      text-decoration: underline;
+    .overlay-close {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #555;
       cursor: pointer;
+      z-index: 10000;
     }
   </style>
 </head>
 <body>
 <div id="map"></div>
+<div id="imageCard" class="overlay-card">
+  <div class="overlay-close" onclick="closeCard()">&times;</div>
+  <img id="cardImage" src="" alt="card image">
+</div>
+
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
@@ -120,132 +109,46 @@
 
   let isUserInteracting = false;
   let userMarker = null;
-  let activePopup = null;
-
   const markerElements = [];
   const blueDotMarkers = [];
 
-  function showPopup(markerData, index) {
-    if (activePopup) activePopup.remove();
-    const html = `
-      <div class="popup-card">
-        <div class="popup-title">${markerData.title}</div>
-        <div class="more-link" onclick="window.open('title${index + 1}.png', '_blank')">더보기</div>
-      </div>
-    `;
-    activePopup = new mapboxgl.Popup({ offset: [0, -10] })
-      .setLngLat([markerData.lng, markerData.lat])
-      .setHTML(html)
-      .addTo(map);
-  }
-
-  map.on('dragstart', () => isUserInteracting = true);
-  map.on('zoomstart', () => isUserInteracting = true);
-  map.on('touchstart', () => isUserInteracting = true);
-  map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
-  map.on('zoomend', () => {
-    setTimeout(() => isUserInteracting = false, 2000);
-    updateMarkerVisibility();
-    if (userMarker) {
-      const userLngLat = userMarker.getLngLat();
-      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
-    }
-  });
-
-  map.on('load', () => updateMarkerVisibility());
-
   const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원' },
-    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원' },
-    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원' },
-    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원' },
-    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨' },
-    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어' },
-    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원' }
+    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '푸른꿈의 정원', image: 'title1.png' },
+    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '맞이정원', image: 'title2.png' },
+    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '구름정원', image: 'title3.png' },
+    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '해봄정원', image: 'title4.png' },
+    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '기업쇼륨', image: 'title5.png' },
+    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '바이오월 페어', image: 'title6.png' },
+    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '베란다 정원', image: 'title7.png' }
   ];
 
-  markers.forEach((m, i) => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    const inner = document.createElement('div');
-    inner.className = 'marker-inner';
-    inner.style.backgroundImage = `url(${m.img})`;
-    el.appendChild(inner);
-    new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title });
-
-    const blueDot = document.createElement('div');
-    blueDot.className = 'blue-dot';
-    new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
-    blueDotMarkers.push(blueDot);
-
-    el.addEventListener('click', () => showPopup(m, i));
-    el.addEventListener('touchstart', () => showPopup(m, i));
-  });
-
-  function updateMarkerVisibility() {
-    const zoom = map.getZoom();
-    markerElements.forEach((m, i) => {
-      if (zoom >= 16) {
-        m.el.style.visibility = 'visible';
-        m.el.style.opacity = 1;
-        blueDotMarkers[i].style.visibility = 'hidden';
-        blueDotMarkers[i].style.opacity = 0;
-      } else {
-        m.el.style.visibility = 'hidden';
-        m.el.style.opacity = 0;
-        blueDotMarkers[i].style.visibility = 'visible';
-        blueDotMarkers[i].style.opacity = 1;
-      }
-    });
+  function showCard(imagePath) {
+    document.getElementById('cardImage').src = imagePath;
+    document.getElementById('imageCard').style.display = 'block';
   }
 
-  function showPopupIfNearby(userLng, userLat) {
-    const zoom = map.getZoom();
-    let nearby = false;
-    markerElements.forEach((m, i) => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      if (zoom >= 16) {
-        m.inner.classList.remove('bounce');
-        if (distance < 100) m.inner.classList.add('bounce');
-        if (distance < 70) {
-          nearby = true;
-          if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
-            showPopup(m, i);
-          }
-        }
-      } else {
-        m.inner.classList.remove('bounce');
-      }
-    });
-    if (!nearby && activePopup) {
-      activePopup.remove();
-      activePopup = null;
-    }
+  function closeCard() {
+    document.getElementById('imageCard').style.display = 'none';
   }
 
-  navigator.geolocation.watchPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
-
-    if (!userMarker) {
+  map.on('load', () => {
+    markers.forEach((m, i) => {
       const el = document.createElement('div');
       el.className = 'custom-marker';
-      el.style.visibility = 'visible';
-      el.style.opacity = 1;
       const inner = document.createElement('div');
-      inner.className = 'marker-inner user-marker-inner';
-      inner.style.backgroundImage = 'url(dung1.gif)';
+      inner.className = 'marker-inner';
+      inner.style.backgroundImage = `url(${m.img})`;
       el.appendChild(inner);
-      userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
-    } else {
-      userMarker.setLngLat([longitude, latitude]);
-    }
-    showPopupIfNearby(longitude, latitude);
-  }, error => console.error("Geolocation error:", error), {
-    enableHighAccuracy: true,
-    maximumAge: 10000,
-    timeout: 10000
+      new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
+      markerElements.push({ el, inner, ...m });
+
+      const blueDot = document.createElement('div');
+      blueDot.className = 'blue-dot';
+      new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
+      blueDotMarkers.push(blueDot);
+
+      el.addEventListener('click', () => showCard(m.image));
+    });
   });
 </script>
 </body>
