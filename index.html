@@ -172,43 +172,59 @@
     markerElements.push({ el, inner, lng: m.lng, lat: m.lat });
   });
 
-  function showPopupIfNearby(userLng, userLat) {
-    const zoom = map.getZoom();
-    let nearby = false;
-  
-    markerElements.forEach(m => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-  
-      // 마커 표시 여부 제어
-      if (zoom >= 16) {
-        m.el.style.display = 'block';
-  
-        // 바운스 처리
-        m.inner.classList.remove('bounce');
-        if (distance < 100) {
-          m.inner.classList.add('bounce');
-        }
-  
-        // 팝업 처리
-        if (distance < 70) {
-          nearby = true;
-          if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
-            if (currentPopup) currentPopup.remove();
-            const popupHTML = `
-              <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-                ${m.title}
-              </div>
-            `;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
-              .setLngLat([m.lng, m.lat])
-              .setHTML(popupHTML)
-              .addTo(map);
-          }
-        }
-      } else {
-        m.el.style.display = 'none';
+function showPopupIfNearby(userLng, userLat) {
+  const zoom = map.getZoom();
+  let nearby = false;
+
+  markerElements.forEach(m => {
+    const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+
+    // 줌이 16 이상일 때만 마커 표시
+    if (zoom >= 16) {
+      m.el.style.display = 'block';
+
+      // 바운스 애니메이션
+      m.inner.classList.remove('bounce');
+      if (distance < 100) {
+        m.inner.classList.add('bounce');
       }
-    });
+
+      // 팝업 생성 조건
+      if (distance < 70) {
+        nearby = true;
+
+        // 현재 팝업이 다르면 새로 생성
+        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+          if (currentPopup) currentPopup.remove();
+
+          const safeTitle = m.title || '제목 없음';
+          const safeUrl = m.url ? `onclick="window.open('${m.url}', '_blank')"` : '';
+
+          const popupHTML = `
+            <div class="popup-content" ${safeUrl}>
+              ${safeTitle}
+            </div>
+          `;
+
+          currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
+            .setLngLat([m.lng, m.lat])
+            .setHTML(popupHTML)
+            .addTo(map);
+        }
+      }
+    } else {
+      // 줌이 작으면 마커 숨김
+      m.el.style.display = 'none';
+    }
+  });
+
+  // 범위 밖이면 팝업 제거
+  if (!nearby && currentPopup) {
+    currentPopup.remove();
+    currentPopup = null;
+  }
+}
+    );
   
     if (!nearby && currentPopup) {
       currentPopup.remove();
