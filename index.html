@@ -45,17 +45,6 @@
       cursor: pointer;
     }
 
-    /* 바운스 애니메이션 제거됨
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-15px); }
-    }
-
-    .bounce {
-      animation: bounce 0.6s infinite;
-    }
-    */
-
     .popup-content:hover {
       background: #f2f2f2;
     }
@@ -112,12 +101,12 @@
     });
   });
 
-  const markers = [
-  { lng: 126.83621, lat: 37.57017, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
-  { lng: 126.83499, lat: 37.57002, img: 'on1.png', title: '식물문화센터' },
-  { lng: 126.83443, lat: 37.57068, img: 'gold1.png', title: '거인의 정원' },
-  { lng: 126.83589, lat: 37.56965, img: 'ct1.png', title: '판매온실' }
-];
+    const markers = [
+    { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
+    { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
+    { lng: 126.78976, lat: 37.50240, img: 'gold1.png', title: '거인의 정원' },
+    { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
+  ];
 
   const markerElements = [];
 
@@ -166,14 +155,14 @@
         currentPopup.remove();
         currentPopup = null;
       }
-      return; // 바운스 제거: bounce 관련 코드 삭제됨
+      return;
     }
 
     markers.forEach((m, i) => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
       const el = markerElements[i];
-      if (distance < 20) {
+      if (distance < 70) {
         nearby = true;
 
         if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
