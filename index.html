@@ -58,6 +58,10 @@
       animation: bounce 0.6s infinite;
     }
 
+    .mapboxgl-popup-tip {
+      display: none !important; /* ← 꼭짓점 제거 */
+    }
+    
     .mapboxgl-popup-content {
       background: transparent;
       box-shadow: none;
@@ -78,6 +82,7 @@
       font-weight: 600;
       font-size: 1.4em;
       text-align: center;
+      cursor: pointer;
     }
 
     .popup-content:hover {
