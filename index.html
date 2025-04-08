@@ -30,6 +30,10 @@
       transform-origin: bottom center;
       will-change: transform;
     }
+    .user-marker-inner {
+      width: 150px;
+      height: 150px;
+    }
 
     .blue-dot {
       width: 10px;
@@ -251,7 +255,7 @@
       el.style.visibility = 'visible';
       el.style.opacity = 1;
       const inner = document.createElement('div');
-      inner.className = 'marker-inner';
+      inner.className = 'marker-inner user-marker-inner'; // 사용자 마커 전용 클래스 추가
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
       userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([longitude, latitude]).addTo(map);
