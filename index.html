@@ -31,6 +31,16 @@
       will-change: transform;
     }
 
+    .blue-dot {
+      width: 16px;
+      height: 16px;
+      background-color: blue;
+      border-radius: 50%;
+      visibility: hidden;
+      opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
+    }
+
     @keyframes bounce {
       0%, 100% { transform: translateY(0); }
       50% { transform: translateY(-12px); }
@@ -93,22 +103,22 @@
   let userMarker = null;
   let currentPopup = null;
 
-  // 사용자 제스처 인식
+  const markerElements = [];
+  const blueDotMarkers = [];
+
   map.on('dragstart', () => isUserInteracting = true);
   map.on('zoomstart', () => isUserInteracting = true);
   map.on('touchstart', () => isUserInteracting = true);
   map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
-
-  // 줌 이벤트: 마커 표시 조건 적용
   map.on('zoomend', () => {
     setTimeout(() => isUserInteracting = false, 2000);
+    updateMarkerVisibility();
     if (userMarker) {
       const userLngLat = userMarker.getLngLat();
       showPopupIfNearby(userLngLat.lng, userLngLat.lat);
     }
   });
 
-  // ✅ 타일 이미지 로딩
   map.on('load', () => {
     const tiles = [
       { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
@@ -121,23 +131,14 @@
       { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
       { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
     ];
-
     tiles.forEach(tile => {
-      map.addSource(tile.id, {
-        type: 'image',
-        url: tile.url,
-        coordinates: tile.coords
-      });
-      map.addLayer({
-        id: tile.id,
-        type: 'raster',
-        source: tile.id,
-        paint: { 'raster-opacity': 1 }
-      });
+      map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
+      map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
     });
+
+    updateMarkerVisibility(); // 초기 줌에 따른 표시
   });
 
-  // 📍 마커 정의
   const markers = [
     { lng: 126.79009, lat: 37.50089, img: 'st1.png', title: '해봄정원', url: 'https://botanicpark.seoul.go.kr/front/main.do' },
     { lng: 126.79139, lat: 37.50200, img: 'on1.png', title: '식물문화센터' },
@@ -145,71 +146,70 @@
     { lng: 126.78835, lat: 37.50166, img: 'ct1.png', title: '판매온실' }
   ];
 
-  const markerElements = [];
-
   markers.forEach(m => {
+    // 기본 마커
     const el = document.createElement('div');
     el.className = 'custom-marker';
-
     const inner = document.createElement('div');
     inner.className = 'marker-inner';
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
+    const marker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([m.lng, m.lat]).addTo(map);
+    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
+
+    // 파란 점 마커
+    const blueDot = document.createElement('div');
+    blueDot.className = 'blue-dot';
+    const blueMarker = new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
+    blueDotMarkers.push(blueDot);
 
     el.addEventListener('click', () => {
-      const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      new mapboxgl.Popup({ offset: [0, -50] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(popupHTML)
-        .addTo(map);
+      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
+      new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(html).addTo(map);
     });
-
     el.addEventListener('touchstart', () => {
-      const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      new mapboxgl.Popup({ offset: [0, -50] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(popupHTML)
-        .addTo(map);
+      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
+      new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(html).addTo(map);
     });
-
-    new mapboxgl.Marker(el, { offset: [0, -37.5] })
-      .setLngLat([m.lng, m.lat])
-      .addTo(map);
-
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
   });
+
+  function updateMarkerVisibility() {
+    const zoom = map.getZoom();
+    markerElements.forEach((m, i) => {
+      if (zoom >= 16) {
+        m.el.style.visibility = 'visible';
+        m.el.style.opacity = 1;
+        blueDotMarkers[i].style.visibility = 'hidden';
+        blueDotMarkers[i].style.opacity = 0;
+      } else {
+        m.el.style.visibility = 'hidden';
+        m.el.style.opacity = 0;
+        blueDotMarkers[i].style.visibility = 'visible';
+        blueDotMarkers[i].style.opacity = 1;
+      }
+    });
+  }
 
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
-
     markerElements.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-
       if (zoom >= 16) {
-        m.el.style.visibility = 'visible';
-        m.el.style.opacity = 1;
-
         m.inner.classList.remove('bounce');
         if (distance < 100) m.inner.classList.add('bounce');
-
         if (distance < 70) {
           nearby = true;
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
             if (currentPopup) currentPopup.remove();
             const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
-              .setLngLat([m.lng, m.lat])
-              .setHTML(popupHTML)
-              .addTo(map);
+            currentPopup = new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(popupHTML).addTo(map);
           }
         }
       } else {
-        m.el.style.visibility = 'hidden';
-        m.el.style.opacity = 0;
+        m.inner.classList.remove('bounce');
       }
     });
-
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
@@ -218,33 +218,23 @@
 
   navigator.geolocation.watchPosition((position) => {
     const { latitude, longitude } = position.coords;
-
-    if (!isUserInteracting) {
-      map.easeTo({ center: [longitude, latitude], duration: 1000 });
-    }
+    if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
 
     if (!userMarker) {
       const el = document.createElement('div');
       el.className = 'custom-marker';
       el.style.visibility = 'visible';
       el.style.opacity = 1;
-
       const inner = document.createElement('div');
       inner.className = 'marker-inner';
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
-
-      userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] })
-        .setLngLat([longitude, latitude])
-        .addTo(map);
+      userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([longitude, latitude]).addTo(map);
     } else {
       userMarker.setLngLat([longitude, latitude]);
     }
-
     showPopupIfNearby(longitude, latitude);
-  }, (error) => {
-    console.error("Geolocation error:", error);
-  }, {
+  }, error => console.error("Geolocation error:", error), {
     enableHighAccuracy: true,
     maximumAge: 10000,
     timeout: 10000
