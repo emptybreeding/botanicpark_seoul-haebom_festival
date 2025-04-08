@@ -141,19 +141,32 @@
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
 
-    const popupHTML = `
-      <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-        ${m.title}
-      </div>
-    `;
+    el.addEventListener('click', () => {
+      const popupHTML = `
+        <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+          ${m.title}
+        </div>
+      `;
+      new mapboxgl.Popup({ offset: [0, -50] })
+        .setLngLat([m.lng, m.lat])
+        .setHTML(popupHTML)
+        .addTo(map);
+    });
 
-    const popup = new mapboxgl.Popup({ offset: [0, -50] }).setHTML(popupHTML);
-    el.addEventListener('click', () => popup.setLngLat([m.lng, m.lat]).addTo(map));
-    el.addEventListener('touchstart', () => popup.setLngLat([m.lng, m.lat]).addTo(map));
+    el.addEventListener('touchstart', () => {
+      const popupHTML = `
+        <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+          ${m.title}
+        </div>
+      `;
+      new mapboxgl.Popup({ offset: [0, -50] })
+        .setLngLat([m.lng, m.lat])
+        .setHTML(popupHTML)
+        .addTo(map);
+    });
 
     new mapboxgl.Marker(el, { offset: [0, -37.5] })
       .setLngLat([m.lng, m.lat])
-      .setPopup(popup)
       .addTo(map);
 
     markerElements.push({ el, inner, lng: m.lng, lat: m.lat });
@@ -163,35 +176,28 @@
     const zoom = map.getZoom();
     let nearby = false;
 
-    if (zoom < 16) {
-      markerElements.forEach(m => m.el.style.display = 'none');
-      markerElements.forEach(m => m.inner.classList.remove('bounce'));
-      if (currentPopup) currentPopup.remove();
-      currentPopup = null;
-      return;
-    }
-
     markerElements.forEach(m => {
-      m.el.style.display = 'block';
       m.inner.classList.remove('bounce');
 
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
 
-      if (distance < 100) m.inner.classList.add('bounce');
+      if (zoom >= 16 && distance < 100) {
+        m.inner.classList.add('bounce');
 
-      if (distance < 70) {
-        nearby = true;
-        if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
-          if (currentPopup) currentPopup.remove();
-          const popupHTML = `
-            <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
-              ${m.title}
-            </div>
-          `;
-          currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
-            .setLngLat([m.lng, m.lat])
-            .setHTML(popupHTML)
-            .addTo(map);
+        if (distance < 70) {
+          nearby = true;
+          if (!currentPopup || currentPopup._lngLat.lng !== m.lng) {
+            if (currentPopup) currentPopup.remove();
+            const popupHTML = `
+              <div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>
+                ${m.title}
+              </div>
+            `;
+            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
+              .setLngLat([m.lng, m.lat])
+              .setHTML(popupHTML)
+              .addTo(map);
+          }
         }
       }
     });
