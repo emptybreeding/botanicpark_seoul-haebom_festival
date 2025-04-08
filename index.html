@@ -38,7 +38,7 @@
     .blue-dot {
       width: 10px;
       height: 10px;
-      background-color: rgba(0, 0, 255, 0.4); /* 중심 원 색상 */
+      background-color: rgba(0, 0, 255, 0.4);
       border: 2px solid white;
       border-radius: 50%;
       box-shadow:
@@ -109,11 +109,19 @@
 
   let isUserInteracting = false;
   let userMarker = null;
-  let currentPopup = null;
-  let fixedPopup = null;
+  let activePopup = null;
 
   const markerElements = [];
   const blueDotMarkers = [];
+
+  function showPopup(markerData) {
+    if (activePopup) activePopup.remove();
+    const html = `<div class="popup-content" ${markerData.url ? `onclick=\"window.open('${markerData.url}', '_blank')\"` : ''}>${markerData.title}</div>`;
+    activePopup = new mapboxgl.Popup({ offset: [0, -70] })
+      .setLngLat([markerData.lng, markerData.lat])
+      .setHTML(html)
+      .addTo(map);
+  }
 
   map.on('dragstart', () => isUserInteracting = true);
   map.on('zoomstart', () => isUserInteracting = true);
@@ -144,8 +152,7 @@
       map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
       map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
     });
-
-    updateMarkerVisibility(); // 초기 줌에 따른 표시
+    updateMarkerVisibility();
   });
 
   const markers = [
@@ -159,47 +166,22 @@
   ];
 
   markers.forEach(m => {
-    // 기본 마커
     const el = document.createElement('div');
     el.className = 'custom-marker';
     const inner = document.createElement('div');
     inner.className = 'marker-inner';
     inner.style.backgroundImage = `url(${m.img})`;
     el.appendChild(inner);
-    const marker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([m.lng, m.lat]).addTo(map);
+    new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([m.lng, m.lat]).addTo(map);
     markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, url: m.url });
 
-    // 파란 점 마커
     const blueDot = document.createElement('div');
     blueDot.className = 'blue-dot';
-    const blueMarker = new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
+    new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
     blueDotMarkers.push(blueDot);
 
-    el.addEventListener('click', () => {
-      if (currentPopup && currentPopup._lngLat.lng === m.lng && currentPopup._lngLat.lat === m.lat) {
-        currentPopup.remove();
-        currentPopup = null;
-      }
-      if (fixedPopup) fixedPopup.remove();
-      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      fixedPopup = new mapboxgl.Popup({ offset: [0, -70] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(html)
-        .addTo(map);
-    });
-    
-    el.addEventListener('touchstart', () => {
-      if (currentPopup && currentPopup._lngLat.lng === m.lng && currentPopup._lngLat.lat === m.lat) {
-        currentPopup.remove();
-        currentPopup = null;
-      }
-      if (fixedPopup) fixedPopup.remove();
-      const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      fixedPopup = new mapboxgl.Popup({ offset: [0, -70] })
-        .setLngLat([m.lng, m.lat])
-        .setHTML(html)
-        .addTo(map);
-    });
+    el.addEventListener('click', () => showPopup(m));
+    el.addEventListener('touchstart', () => showPopup(m));
   });
 
   function updateMarkerVisibility() {
@@ -222,34 +204,24 @@
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
-  
     markerElements.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-  
       if (zoom >= 16) {
         m.inner.classList.remove('bounce');
         if (distance < 100) m.inner.classList.add('bounce');
-  
         if (distance < 70) {
           nearby = true;
-          // 현재 자동 팝업만 다룸. 클릭 팝업(fixedPopup)은 무관.
-          if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
-            if (currentPopup) currentPopup.remove();
-            const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -70] })
-              .setLngLat([m.lng, m.lat])
-              .setHTML(popupHTML)
-              .addTo(map);
+          if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
+            showPopup(m);
           }
         }
       } else {
         m.inner.classList.remove('bounce');
       }
     });
-  
-    if (!nearby && currentPopup) {
-      currentPopup.remove();
-      currentPopup = null;
+    if (!nearby && activePopup) {
+      activePopup.remove();
+      activePopup = null;
     }
   }
 
@@ -263,7 +235,7 @@
       el.style.visibility = 'visible';
       el.style.opacity = 1;
       const inner = document.createElement('div');
-      inner.className = 'marker-inner user-marker-inner'; // 사용자 마커 전용 클래스 추가
+      inner.className = 'marker-inner user-marker-inner';
       inner.style.backgroundImage = 'url(dung1.gif)';
       el.appendChild(inner);
       userMarker = new mapboxgl.Marker(el, { offset: [0, -37.5] }).setLngLat([longitude, latitude]).addTo(map);
