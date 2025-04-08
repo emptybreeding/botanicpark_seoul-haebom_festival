@@ -172,12 +172,21 @@
     blueDotMarkers.push(blueDot);
 
     el.addEventListener('click', () => {
+      if (fixedPopup) fixedPopup.remove(); // 기존 클릭 팝업 제거
       const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(html).addTo(map);
+      fixedPopup = new mapboxgl.Popup({ offset: [0, -50] })
+        .setLngLat([m.lng, m.lat])
+        .setHTML(html)
+        .addTo(map);
     });
+    
     el.addEventListener('touchstart', () => {
+      if (fixedPopup) fixedPopup.remove(); // 터치 이벤트에도 동일 처리
       const html = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-      new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(html).addTo(map);
+      fixedPopup = new mapboxgl.Popup({ offset: [0, -50] })
+        .setLngLat([m.lng, m.lat])
+        .setHTML(html)
+        .addTo(map);
     });
   });
 
@@ -201,23 +210,31 @@
   function showPopupIfNearby(userLng, userLat) {
     const zoom = map.getZoom();
     let nearby = false;
+  
     markerElements.forEach(m => {
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+  
       if (zoom >= 16) {
         m.inner.classList.remove('bounce');
         if (distance < 100) m.inner.classList.add('bounce');
+  
         if (distance < 70) {
           nearby = true;
+          // 현재 자동 팝업만 다룸. 클릭 팝업(fixedPopup)은 무관.
           if (!currentPopup || currentPopup._lngLat.lng !== m.lng || currentPopup._lngLat.lat !== m.lat) {
             if (currentPopup) currentPopup.remove();
             const popupHTML = `<div class="popup-content" ${m.url ? `onclick="window.open('${m.url}', '_blank')"` : ''}>${m.title}</div>`;
-            currentPopup = new mapboxgl.Popup({ offset: [0, -50] }).setLngLat([m.lng, m.lat]).setHTML(popupHTML).addTo(map);
+            currentPopup = new mapboxgl.Popup({ offset: [0, -50] })
+              .setLngLat([m.lng, m.lat])
+              .setHTML(popupHTML)
+              .addTo(map);
           }
         }
       } else {
         m.inner.classList.remove('bounce');
       }
     });
+  
     if (!nearby && currentPopup) {
       currentPopup.remove();
       currentPopup = null;
