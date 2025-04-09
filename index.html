@@ -11,11 +11,13 @@
     body, html { margin: 0; padding: 0; height: 100dvh; }
     #map {
       opacity: 0;
-      transition: opacity 0.3s;
+      visibility: hidden;
+      transition: opacity 0.3s ease;
     }
     
     #map.visible {
       opacity: 1;
+      visibility: visible;
     }
 
     #prologue {
