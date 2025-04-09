@@ -8,7 +8,91 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    /* ...기존 스타일 그대로 유지 (생략 가능) */
+    body, html { margin: 0; padding: 0; height: 100dvh; }
+    #map { display: none; width: 100vw; height: 100vh; }
+    #map.visible { display: block; }
+
+    #prologue {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #000; display: flex; justify-content: center;
+      align-items: center; flex-direction: column; z-index: 2000;
+    }
+    #prologue img {
+      width: 100%; height: 100%; object-fit: fill;
+    }
+    #enter-button {
+      position: absolute; bottom: 100px; left: 50%; transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9); color: #448e7a; font-size: 18px;
+      padding: 12px 20px; border: none; border-radius: 8px; cursor: pointer;
+      font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+
+    .custom-marker {
+      width: 75px; height: 75px; background: none;
+      pointer-events: auto; visibility: hidden; opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
+    }
+    .marker-inner {
+      width: 100%; height: 100%; background-size: contain;
+      background-repeat: no-repeat; background-position: center;
+      transform-origin: bottom center; will-change: transform;
+    }
+    .user-marker-inner {
+      width: 130px; height: 130px;
+    }
+    .blue-dot {
+      width: 10px; height: 10px; background-color: rgba(68, 142, 122, 0.4);
+      border: 2px solid white; border-radius: 50%;
+      box-shadow: 0 0 10px 5px rgba(68, 142, 122, 0.3), 0 0 30px 15px rgba(68, 142, 122, 0.2);
+      visibility: hidden; opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .bounce { animation: bounce 0.6s infinite; }
+
+    .mapboxgl-popup-tip { display: none !important; }
+    .mapboxgl-popup-content { background: transparent; box-shadow: none; padding: 0; }
+    .mapboxgl-popup-close-button { display: none; }
+
+    .popup-card {
+      font-family: "Noto Sans KR", sans-serif;
+      background: white; border-radius: 16px; padding: 12px 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25); position: relative;
+      max-width: 280px; text-align: center;
+    }
+    .popup-title {
+      font-size: 1.2em; font-weight: 700; color: #448e7a; margin-bottom: 8px;
+    }
+    .popup-more {
+      font-size: 0.95em; color: #448e7a; cursor: pointer; font-weight: 500;
+      border-top: 1px solid #eee; padding-top: 8px; text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    #popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4); z-index: 1000; display: flex;
+      justify-content: center; align-items: center;
+    }
+    .popup-image-wrapper {
+      background: white; padding: 10px; border-radius: 16px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.3); max-width: 90vw; max-height: 80vh;
+      opacity: 0; animation: fadeInPopup 0.4s ease-out forwards;
+    }
+    @keyframes fadeInPopup { to { opacity: 1; } }
+    #popup-image {
+      max-width: 100%; max-height: 100%; border-radius: 12px;
+    }
+    .popup-close {
+      position: absolute; top: 6px; right: 6px; font-size: 35px;
+      font-weight: bold; color: #888; cursor: pointer; width: 40px;
+      height: 40px; line-height: 40px; text-align: center;
+      border-radius: 50%; background-color: rgba(255,255,255,0.8);
+    }
   </style>
 </head>
 <body>
@@ -28,6 +112,13 @@
 
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
+
+    function enterMap() {
+      document.getElementById('prologue').style.display = 'none';
+      const mapEl = document.getElementById('map');
+      mapEl.classList.add('visible');
+      requestAnimationFrame(() => map.resize());
+    }
 
     const map = new mapboxgl.Map({
       container: 'map',
@@ -51,16 +142,17 @@
     const markerElements = [];
     const blueDotMarkers = [];
 
-    function enterMap() {
-      document.getElementById('prologue').style.display = 'none';
-      const mapEl = document.getElementById('map');
-      mapEl.classList.add('visible');
-
-      // iOS 안정성 대응
-      requestAnimationFrame(() => map.resize());
-    }
-
-    const tiles = [ /* tile 배열은 기존 그대로 사용 */ ];
+    const tiles = [
+      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
+      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
+      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
+      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
+      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
+      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
+      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
+      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
+      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
+    ];
 
     map.on('load', () => {
       let i = 0;
@@ -78,7 +170,15 @@
       loadTile();
     });
 
-    const markers = [ /* 마커 배열은 기존 그대로 */ ];
+    const markers = [
+      { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', popupImg: 'title1.png' },
+      { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원', popupImg: 'title2.png' },
+      { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원', popupImg: 'title3.png' },
+      { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원', popupImg: 'title4.png' },
+      { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨', popupImg: 'title5.png' },
+      { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어', popupImg: 'title6.png' },
+      { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원', popupImg: 'title7.png' }
+    ];
 
     markers.forEach(m => {
       const el = document.createElement('div');
@@ -112,31 +212,25 @@
 
     function showPopup(markerData, isImageExpanded = false) {
       if (activePopup) activePopup.remove();
-
       if (!isImageExpanded) {
         const container = document.createElement('div');
         container.className = 'popup-card';
-
         const title = document.createElement('div');
         title.className = 'popup-title';
         title.innerHTML = markerData.title;
         container.appendChild(title);
-
         const moreBtn = document.createElement('div');
         moreBtn.className = 'popup-more';
         moreBtn.innerText = '더보기';
         moreBtn.onclick = () => showPopup(markerData, true);
         container.appendChild(moreBtn);
-
         activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
           .setLngLat([markerData.lng, markerData.lat])
           .setDOMContent(container)
           .addTo(map);
       } else {
-        const overlay = document.getElementById('popup-overlay');
-        const img = document.getElementById('popup-image');
-        img.src = markerData.popupImg;
-        overlay.style.display = 'flex';
+        document.getElementById('popup-image').src = markerData.popupImg;
+        document.getElementById('popup-overlay').style.display = 'flex';
       }
     }
 
@@ -208,7 +302,6 @@
       }
     });
 
-    // 전역 에러 핸들링
     window.onerror = function(msg, url, line, col, error) {
       console.log("Global Error:", msg, line, col);
     };
