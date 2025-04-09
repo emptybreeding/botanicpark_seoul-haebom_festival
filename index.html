@@ -10,9 +10,12 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100dvh; }
     #map {
-      width: 100%;
-      height: 100%;
-      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+    
+    #map.visible {
+      opacity: 1;
     }
 
     #prologue {
@@ -203,11 +206,10 @@
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
   function enterMap() {
     document.getElementById('prologue').style.display = 'none';
-    
-    const mapEl = document.getElementById('map');
-    mapEl.style.visibility = 'visible'; // ✅ 변경된 포인트
   
-    // 아이폰 대응을 위해 requestAnimationFrame 2단계 사용
+    const mapEl = document.getElementById('map');
+    mapEl.classList.add('visible');
+  
     requestAnimationFrame(() => {
       map.resize();
       requestAnimationFrame(() => {
