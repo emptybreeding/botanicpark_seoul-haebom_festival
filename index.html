@@ -200,9 +200,11 @@
   function enterMap() {
     document.getElementById('prologue').style.display = 'none';
     document.getElementById('map').style.display = 'block';
+    setTimeout(() => {
     if (typeof map !== 'undefined' && map !== null) {
       map.resize();
-    }
+      }
+    }, 200);
   }
 
   const map = new mapboxgl.Map({
