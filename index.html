@@ -10,16 +10,12 @@
   <style>
     body, html { margin: 0; padding: 0; height: 100dvh; }
     #map {
+      display: none;
       width: 100vw;
       height: 100vh;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.3s ease;
     }
-    
     #map.visible {
-      opacity: 1;
-      pointer-events: auto;
+      display: block;
     }
 
     #prologue {
@@ -209,18 +205,15 @@
 <script>
   mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
   function enterMap() {
-    const prologue = document.getElementById('prologue');
+    document.getElementById('prologue').style.display = 'none';
     const mapEl = document.getElementById('map');
   
-    prologue.style.display = 'none';
     mapEl.classList.add('visible');
   
-    // iOS Safari 대응: 2번의 animation frame을 사용한 안전한 resize 처리
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        map.resize();
-      });
-    });
+    // iOS Safari 대응: 충분한 시간 후 resize
+    setTimeout(() => {
+      map.resize();
+    }, 300);
   }
 
   const map = new mapboxgl.Map({
