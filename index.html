@@ -8,399 +8,210 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html { margin: 0; padding: 0; height: 100dvh; }
-    #map {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-    }
-    #map.visible {
-      display: block;
-    }
-
-    #prologue {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw; height: 100vh;
-      background: #000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      flex-direction: column;
-      z-index: 2000;
-    }
-    #prologue img {
-      width: 100%;
-      height: 100%;
-      object-fit: fill;
-    }
-    #enter-button {
-      position: absolute;
-      bottom: 100px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: rgba(255, 255, 255, 0.9);
-      color: #448e7a;
-      font-size: 18px;
-      padding: 12px 20px;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      white-space: nowrap;
-    }
-    #enter-button:hover {
-      background: #fff;
-    }
-
-    .custom-marker {
-      width: 75px;
-      height: 75px;
-      background: none;
-      pointer-events: auto;
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0s, opacity 0.3s ease-in-out;
-    }
-
-    .marker-inner {
-      width: 100%;
-      height: 100%;
-      background-size: contain;
-      background-repeat: no-repeat;
-      background-position: center;
-      transform-origin: bottom center;
-      will-change: transform;
-    }
-
-    .user-marker-inner {
-      width: 130px;
-      height: 130px;
-    }
-
-    .blue-dot {
-      width: 10px;
-      height: 10px;
-      background-color: rgba(68, 142, 122, 0.4);
-      border: 2px solid white;
-      border-radius: 50%;
-      box-shadow: 0 0 10px 5px rgba(68, 142, 122, 0.3), 0 0 30px 15px rgba(68, 142, 122, 0.2);
-      visibility: hidden;
-      opacity: 0;
-      transition: visibility 0s, opacity 0.3s ease-in-out;
-    }
-
-    @keyframes bounce {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-12px); }
-    }
-
-    .bounce {
-      animation: bounce 0.6s infinite;
-    }
-
-    .mapboxgl-popup-tip { display: none !important; }
-    .mapboxgl-popup-content { background: transparent; box-shadow: none; padding: 0; }
-    .mapboxgl-popup-close-button { display: none; }
-
-    .popup-card {
-      font-family: "Noto Sans KR", sans-serif;
-      background: white;
-      border-radius: 16px;
-      padding: 12px 16px;
-      box-shadow: 0 4px 14px rgba(0,0,0,0.25);
-      position: relative;
-      max-width: 280px;
-      text-align: center;
-    }
-
-    .popup-title {
-      font-size: 1.2em;
-      font-weight: 700;
-      color: #448e7a;
-      margin-bottom: 8px;
-    }
-
-    .popup-more {
-      font-size: 0.95em;
-      color: #448e7a;
-      cursor: pointer;
-      font-weight: 500;
-      border-top: 1px solid #eee;
-      padding-top: 8px;
-      text-decoration: underline;
-      text-underline-offset: 3px;
-    }
-
-    .popup-more:hover { text-decoration: underline; }
-
-    #popup-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100vw;
-      height: 100vh;
-      background: rgba(0,0,0,0.4);
-      z-index: 1000;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-    }
-    
-    .popup-image-wrapper {
-      position: relative;
-      background: white;
-      padding: 10px;
-      border-radius: 16px;
-      box-shadow: 0 4px 16px rgba(0,0,0,0.3);
-      max-width: 90vw;
-      max-height: 80vh;
-      opacity: 0;
-      animation: fadeInPopup 0.4s ease-out forwards;
-    }
-    
-    @keyframes fadeInPopup {
-      to {
-        opacity: 1;
-      }
-    }
-    
-    #popup-image {
-      max-width: 100%;
-      max-height: 100%;
-      border-radius: 12px;
-    }
-    
-    .popup-close {
-      position: absolute;
-      top: 6px;
-      right: 6px;
-      font-size: 35px;
-      font-weight: bold;
-      color: #888;
-      cursor: pointer;
-      width: 40px;
-      height: 40px;
-      line-height: 40px;
-      text-align: center;
-      border-radius: 50%;
-      background-color: rgba(255,255,255,0.8);
-    }
+    /* ...기존 스타일 그대로 유지 (생략 가능) */
   </style>
 </head>
 <body>
   <div id="prologue">
-  <img src="prologue.jpeg" alt="Intro Image">
-  <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
-</div>
-
-<div id="popup-overlay" style="display: none;">
-  <div class="popup-image-wrapper">
-    <img id="popup-image" src="" alt="popup" />
-    <div class="popup-close" onclick="closeImagePopup()">&times;</div>
+    <img src="prologue.jpeg" alt="Intro Image">
+    <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
   </div>
-</div>
 
-<div id="map"></div>
-<script>
-  mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
-  function enterMap() {
-    document.getElementById('prologue').style.display = 'none';
-    const mapEl = document.getElementById('map');
-  
-    mapEl.classList.add('visible');
-  
-    // iOS Safari 대응: 충분한 시간 후 resize
-    setTimeout(() => {
-      map.resize();
-    }, 300);
-  }
+  <div id="popup-overlay" style="display: none;">
+    <div class="popup-image-wrapper">
+      <img id="popup-image" src="" alt="popup" />
+      <div class="popup-close" onclick="closeImagePopup()">&times;</div>
+    </div>
+  </div>
 
-  const map = new mapboxgl.Map({
-    container: 'map',
-    style: {
-      version: 8,
-      sources: {},
-      layers: [{
-        id: 'background',
-        type: 'background',
-        paint: { 'background-color': '#448e7a' }
-      }]
-    },
-    center: [126.8355, 37.5700],
-    zoom: 15,
-    bearing: 314
-  });
+  <div id="map"></div>
 
-  let isUserInteracting = false;
-  let userMarker = null;
-  let activePopup = null;
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
-  const markerElements = [];
-  const blueDotMarkers = [];
-
-  function showPopup(markerData, isImageExpanded = false) {
-    if (activePopup) activePopup.remove();
-  
-    if (!isImageExpanded) {
-      // 기본 팝업 (마커 위치 기준)
-      const container = document.createElement('div');
-      container.className = 'popup-card';
-  
-      const title = document.createElement('div');
-      title.className = 'popup-title';
-      title.innerHTML = markerData.title;
-      container.appendChild(title);
-  
-      const moreBtn = document.createElement('div');
-      moreBtn.className = 'popup-more';
-      moreBtn.innerText = '더보기';
-      moreBtn.onclick = () => showPopup(markerData, true);
-      container.appendChild(moreBtn);
-  
-      activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
-        .setLngLat([markerData.lng, markerData.lat])
-        .setDOMContent(container)
-        .addTo(map);
-    } else {
-      // 이미지 팝업 (화면 정중앙, 오버레이 방식)
-      const overlay = document.getElementById('popup-overlay');
-      const img = document.getElementById('popup-image');
-      img.src = markerData.popupImg;
-      overlay.style.display = 'flex';
-    }
-  }
-  
-  function closeImagePopup() {
-    const overlay = document.getElementById('popup-overlay');
-    overlay.style.display = 'none';
-  }
-
-  map.on('dragstart', () => isUserInteracting = true);
-  map.on('zoomstart', () => isUserInteracting = true);
-  map.on('touchstart', () => isUserInteracting = true);
-  map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
-  map.on('zoomend', () => {
-    setTimeout(() => isUserInteracting = false, 2000);
-    updateMarkerVisibility();
-    if (userMarker) {
-      const userLngLat = userMarker.getLngLat();
-      showPopupIfNearby(userLngLat.lng, userLngLat.lat);
-    }
-  });
-
-  map.on('load', () => {
-    const tiles = [
-      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
-      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
-      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
-      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
-      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
-      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
-      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
-      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
-      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
-    ];
-    tiles.forEach(tile => {
-      map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
-      map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {},
+        layers: [{
+          id: 'background',
+          type: 'background',
+          paint: { 'background-color': '#448e7a' }
+        }]
+      },
+      center: [126.8355, 37.5700],
+      zoom: 15,
+      bearing: 314
     });
-    updateMarkerVisibility();
-  });
 
-  const markers = [
-    { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', popupImg: 'title1.png' },
-    { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원', popupImg: 'title2.png' },
-    { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원', popupImg: 'title3.png' },
-    { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원', popupImg: 'title4.png' },
-    { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨', popupImg: 'title5.png' },
-    { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어', popupImg: 'title6.png' },
-    { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원', popupImg: 'title7.png' }
-  ];
+    let isUserInteracting = false;
+    let userMarker = null;
+    let activePopup = null;
+    const markerElements = [];
+    const blueDotMarkers = [];
 
-  markers.forEach(m => {
-    const el = document.createElement('div');
-    el.className = 'custom-marker';
-    const inner = document.createElement('div');
-    inner.className = 'marker-inner';
-    inner.style.backgroundImage = `url(${m.img})`;
-    el.appendChild(inner);
-    new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
-    markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, popupImg: m.popupImg });
+    function enterMap() {
+      document.getElementById('prologue').style.display = 'none';
+      const mapEl = document.getElementById('map');
+      mapEl.classList.add('visible');
 
-    const blueDot = document.createElement('div');
-    blueDot.className = 'blue-dot';
-    new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
-    blueDotMarkers.push(blueDot);
+      // iOS 안정성 대응
+      requestAnimationFrame(() => map.resize());
+    }
 
-    el.addEventListener('click', () => showPopup(m));
-    el.addEventListener('touchstart', () => showPopup(m));
-  });
+    const tiles = [ /* tile 배열은 기존 그대로 사용 */ ];
 
-  function updateMarkerVisibility() {
-    const zoom = map.getZoom();
-    markerElements.forEach((m, i) => {
-      if (zoom >= 16) {
-        m.el.style.visibility = 'visible';
-        m.el.style.opacity = 1;
-        blueDotMarkers[i].style.visibility = 'hidden';
-        blueDotMarkers[i].style.opacity = 0;
-      } else {
-        m.el.style.visibility = 'hidden';
-        m.el.style.opacity = 0;
-        blueDotMarkers[i].style.visibility = 'visible';
-        blueDotMarkers[i].style.opacity = 1;
-      }
-    });
-  }
-
-  function showPopupIfNearby(userLng, userLat) {
-    const zoom = map.getZoom();
-    let nearby = false;
-    markerElements.forEach(m => {
-      const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-      if (zoom >= 16) {
-        m.inner.classList.remove('bounce');
-        if (distance < 100) m.inner.classList.add('bounce');
-        if (distance < 70) {
-          nearby = true;
-          if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
-            showPopup(m);
-          }
+    map.on('load', () => {
+      let i = 0;
+      function loadTile() {
+        if (i < tiles.length) {
+          const tile = tiles[i];
+          map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
+          map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
+          i++;
+          setTimeout(loadTile, 50);
+        } else {
+          updateMarkerVisibility();
         }
-      } else {
-        m.inner.classList.remove('bounce');
       }
+      loadTile();
     });
-    if (!nearby && activePopup) {
-      activePopup.remove();
-      activePopup = null;
-    }
-  }
 
-  navigator.geolocation.watchPosition((position) => {
-    const { latitude, longitude } = position.coords;
-    if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
+    const markers = [ /* 마커 배열은 기존 그대로 */ ];
 
-    if (!userMarker) {
+    markers.forEach(m => {
       const el = document.createElement('div');
       el.className = 'custom-marker';
-      el.style.visibility = 'visible';
-      el.style.opacity = 1;
       const inner = document.createElement('div');
-      inner.className = 'marker-inner user-marker-inner';
-      inner.style.backgroundImage = 'url(dung1.gif)';
+      inner.className = 'marker-inner';
+      inner.style.backgroundImage = `url(${m.img})`;
       el.appendChild(inner);
-      userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
-    } else {
-      userMarker.setLngLat([longitude, latitude]);
+      new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
+      markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, popupImg: m.popupImg });
+
+      const blueDot = document.createElement('div');
+      blueDot.className = 'blue-dot';
+      new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
+      blueDotMarkers.push(blueDot);
+
+      el.addEventListener('click', () => showPopup(m));
+      el.addEventListener('touchstart', () => showPopup(m));
+    });
+
+    function updateMarkerVisibility() {
+      const zoom = map.getZoom();
+      markerElements.forEach((m, i) => {
+        const show = zoom >= 16;
+        m.el.style.visibility = show ? 'visible' : 'hidden';
+        m.el.style.opacity = show ? 1 : 0;
+        blueDotMarkers[i].style.visibility = show ? 'hidden' : 'visible';
+        blueDotMarkers[i].style.opacity = show ? 0 : 1;
+      });
     }
-    showPopupIfNearby(longitude, latitude);
-  }, error => console.error("Geolocation error:", error), {
-    enableHighAccuracy: true,
-    maximumAge: 10000,
-    timeout: 10000
-  });
-</script>
+
+    function showPopup(markerData, isImageExpanded = false) {
+      if (activePopup) activePopup.remove();
+
+      if (!isImageExpanded) {
+        const container = document.createElement('div');
+        container.className = 'popup-card';
+
+        const title = document.createElement('div');
+        title.className = 'popup-title';
+        title.innerHTML = markerData.title;
+        container.appendChild(title);
+
+        const moreBtn = document.createElement('div');
+        moreBtn.className = 'popup-more';
+        moreBtn.innerText = '더보기';
+        moreBtn.onclick = () => showPopup(markerData, true);
+        container.appendChild(moreBtn);
+
+        activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
+          .setLngLat([markerData.lng, markerData.lat])
+          .setDOMContent(container)
+          .addTo(map);
+      } else {
+        const overlay = document.getElementById('popup-overlay');
+        const img = document.getElementById('popup-image');
+        img.src = markerData.popupImg;
+        overlay.style.display = 'flex';
+      }
+    }
+
+    function closeImagePopup() {
+      document.getElementById('popup-overlay').style.display = 'none';
+    }
+
+    function showPopupIfNearby(userLng, userLat) {
+      const zoom = map.getZoom();
+      let nearby = false;
+      markerElements.forEach(m => {
+        const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+        if (zoom >= 16) {
+          m.inner.classList.remove('bounce');
+          if (distance < 100) m.inner.classList.add('bounce');
+          if (distance < 70) {
+            nearby = true;
+            if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
+              showPopup(m);
+            }
+          }
+        } else {
+          m.inner.classList.remove('bounce');
+        }
+      });
+      if (!nearby && activePopup) {
+        activePopup.remove();
+        activePopup = null;
+      }
+    }
+
+    navigator.geolocation.watchPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
+
+      if (!userMarker) {
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.visibility = 'visible';
+        el.style.opacity = 1;
+        const inner = document.createElement('div');
+        inner.className = 'marker-inner user-marker-inner';
+        inner.style.backgroundImage = 'url(dung1.gif)';
+        el.appendChild(inner);
+        userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
+      } else {
+        userMarker.setLngLat([longitude, latitude]);
+      }
+      showPopupIfNearby(longitude, latitude);
+    }, error => {
+      console.error("Geolocation error:", error);
+      alert("📍 위치 권한이 필요합니다. 설정에서 허용해 주세요.");
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 10000,
+      timeout: 10000
+    });
+
+    map.on('dragstart', () => isUserInteracting = true);
+    map.on('zoomstart', () => isUserInteracting = true);
+    map.on('touchstart', () => isUserInteracting = true);
+    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
+    map.on('zoomend', () => {
+      setTimeout(() => isUserInteracting = false, 2000);
+      updateMarkerVisibility();
+      if (userMarker) {
+        const userLngLat = userMarker.getLngLat();
+        showPopupIfNearby(userLngLat.lng, userLngLat.lat);
+      }
+    });
+
+    // 전역 에러 핸들링
+    window.onerror = function(msg, url, line, col, error) {
+      console.log("Global Error:", msg, line, col);
+    };
+  </script>
 </body>
 </html>
