@@ -171,13 +171,13 @@
     });
 
     const markers = [
-      { lng: 126.79009, lat: 37.50089, img: 'cns1.png', title: '도시와 자연의 노래<br>푸른꿈의 정원', popupImg: 'title1.png' },
-      { lng: 126.79139, lat: 37.50200, img: 'cns2.png', title: '도시와 자연의 노래<br>맞이정원', popupImg: 'title2.png' },
-      { lng: 126.78976, lat: 37.50240, img: 'cs1.png', title: '도시의 하늘정원<br>구름정원', popupImg: 'title3.png' },
-      { lng: 126.78835, lat: 37.50166, img: 'cs2.png', title: '도시의 하늘정원<br>해봄정원', popupImg: 'title4.png' },
-      { lng: 126.79242, lat: 37.50066, img: 'lw1.png', title: '살아 있는 벽의 노래<br>기업쇼륨', popupImg: 'title5.png' },
-      { lng: 126.78995, lat: 37.49911, img: 'lw2.png', title: '살이 있는 벽의 노래<br>바이오월 페어', popupImg: 'title6.png' },
-      { lng: 126.78962, lat: 37.50340, img: 'ho1.png', title: '숨겨진 오아시스<br>베란다 정원', popupImg: 'title7.png' }
+    { lng: 126.83561, lat: 37.56926, img: 'cns1.png', title: '푸른꿈의 정원', popupImg: 'title1.png' },
+    { lng: 126.83550, lat: 37.56931, img: 'cns2.png', title: '맞이정원', popupImg: 'title2.png' },
+    { lng: 126.83520, lat: 37.57004, img: 'cs1.png', title: '베란다 정원', popupImg: 'title3.png' },
+    { lng: 126.83499, lat: 37.57023, img: 'cs2.png', title: '수집종 전시', popupImg: 'title4.png' },
+    { lng: 126.83537, lat: 37.56962, img: 'lw1.png', title: '바이오월 페어', popupImg: 'title5.png' },
+    { lng: 126.83566, lat: 37.56987, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
+    { lng: 126.83551, lat: 37.57002, img: 'ho1.png', title: '산책 정원', popupImg: 'title7.png' }
     ];
 
     markers.forEach(m => {
@@ -245,8 +245,8 @@
         const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
         if (zoom >= 16) {
           m.inner.classList.remove('bounce');
-          if (distance < 100) m.inner.classList.add('bounce');
-          if (distance < 70) {
+          if (distance < 20) m.inner.classList.add('bounce');
+          if (distance < 10) {
             nearby = true;
             if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
               showPopup(m);
