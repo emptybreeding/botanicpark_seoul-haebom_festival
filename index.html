@@ -352,8 +352,8 @@
       const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
       if (zoom >= 16) {
         m.inner.classList.remove('bounce');
-        if (distance < 100) m.inner.classList.add('bounce');
-        if (distance < 70) {
+        if (distance < 50) m.inner.classList.add('bounce');
+        if (distance < 30) {
           nearby = true;
           if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
             showPopup(m);
