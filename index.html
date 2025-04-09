@@ -198,6 +198,9 @@
   function enterMap() {
     document.getElementById('prologue').style.display = 'none';
     document.getElementById('map').style.display = 'block';
+    if (typeof map !== 'undefined' && map !== null) {
+      map.resize();
+    }
   }
 
   const map = new mapboxgl.Map({
