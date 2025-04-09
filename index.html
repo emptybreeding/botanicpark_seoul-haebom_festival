@@ -140,37 +140,41 @@
 
   function showPopup(markerData, isImageExpanded = false) {
     if (activePopup) activePopup.remove();
-
+  
     const container = document.createElement('div');
     container.className = 'popup-card';
-
-    const closeBtn = document.createElement('div');
-    closeBtn.className = 'popup-close';
-    closeBtn.innerHTML = '&times;';
-    closeBtn.onclick = () => {
-      activePopup.remove();
-      activePopup = null;
-    };
-
+  
+    // 제목
     const title = document.createElement('div');
     title.className = 'popup-title';
     title.innerHTML = markerData.title;
-
-    container.append(closeBtn, title);
-
+    container.appendChild(title);
+  
     if (!isImageExpanded) {
+      // 더보기 버튼만 표시
       const moreBtn = document.createElement('div');
       moreBtn.className = 'popup-more';
       moreBtn.innerText = '더보기';
       moreBtn.onclick = () => showPopup(markerData, true);
-      container.append(moreBtn);
+      container.appendChild(moreBtn);
     } else {
+      // 이미지 및 닫기 버튼 표시
+      const closeBtn = document.createElement('div');
+      closeBtn.className = 'popup-close';
+      closeBtn.innerHTML = '&times;';
+      closeBtn.onclick = () => {
+        activePopup.remove();
+        activePopup = null;
+      };
+  
       const image = document.createElement('img');
       image.className = 'popup-image';
       image.src = markerData.popupImg;
-      container.append(image);
+      image.style.display = 'block';
+  
+      container.append(closeBtn, image);
     }
-
+  
     activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
       .setLngLat([markerData.lng, markerData.lat])
       .setDOMContent(container)
