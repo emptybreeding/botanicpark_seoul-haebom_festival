@@ -112,6 +112,15 @@
       box-shadow: 0 4px 16px rgba(0,0,0,0.3);
       max-width: 90vw;
       max-height: 80vh;
+      transform: scale(0.8);
+      opacity: 0;
+      animation: popupZoomIn 0.3s ease-out forwards;
+    }
+    @keyframes popupZoomIn {
+      to {
+        transform: scale(1);
+        opacity: 1;
+      }
     }
     
     #popup-image {
