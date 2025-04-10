@@ -151,9 +151,14 @@
       left: 50%;
       transform: translateX(-50%);
       z-index: 1500;
-      width: 65vw; /* 필요시 조정 가능 */
+      width: 65vw;
       max-width: 300px;
-      pointer-events: none; /* 클릭 방해 없도록 */
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    #map-title-banner.hidden {
+      opacity: 0;
     }
 
   </style>
@@ -282,14 +287,19 @@
       });
     }
 
-function updateZoomHint() {
-  const zoom = map.getZoom();
-  const hint = document.getElementById('zoom-hint');
-  const titleBanner = document.getElementById('map-title-banner');
-
-  hint.style.display = zoom >= 16.5 ? 'none' : 'block';
-  titleBanner.style.display = zoom >= 16.4 ? 'none' : 'block';
-}
+    function updateZoomHint() {
+      const zoom = map.getZoom();
+      const hint = document.getElementById('zoom-hint');
+      const titleBanner = document.getElementById('map-title-banner');
+    
+      hint.style.display = zoom >= 16.5 ? 'none' : 'block';
+    
+      if (zoom >= 16.4) {
+        titleBanner.classList.add('hidden');
+      } else {
+        titleBanner.classList.remove('hidden');
+      }
+    }
 
     function showPopup(markerData, isImageExpanded = false) {
       if (activePopup) activePopup.remove();
