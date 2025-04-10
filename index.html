@@ -126,7 +126,7 @@
       max-height: 100%;
       border-radius: 12px;
       opacity: 0;
-      transition: opacity 0.2s ease;
+      transition: opacity 0.1s ease;
     }
     
     .popup-close {
@@ -168,7 +168,7 @@
 
     function enterMap() {
       document.getElementById('prologue').style.display = 'none';
-      document.getElementById('enter-button').style.display = 'none'; // 버튼도 숨김
+      document.getElementById('enter-button').style.display = 'none';
       const mapEl = document.getElementById('map');
       mapEl.classList.add('visible');
       requestAnimationFrame(() => {
@@ -326,7 +326,7 @@
       image.style.opacity = 0;
       setTimeout(() => {
         overlay.style.display = 'none';
-      }, 200); // transition 시간과 일치
+      }, 100);
     }
 
     function showPopupIfNearby(userLng, userLat) {
@@ -337,7 +337,7 @@
         if (zoom >= 16.4) {
           m.inner.classList.remove('bounce');
           if (distance < 20) m.inner.classList.add('bounce');
-          if (distance < 10) {
+          if (distance < 15) {
             nearby = true;
             if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
               showPopup(m);
