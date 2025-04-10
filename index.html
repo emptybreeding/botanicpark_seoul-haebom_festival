@@ -159,7 +159,10 @@
       document.getElementById('prologue').style.display = 'none';
       const mapEl = document.getElementById('map');
       mapEl.classList.add('visible');
-      requestAnimationFrame(() => map.resize());
+      requestAnimationFrame(() => {
+        map.resize();
+        updateZoomHint();
+      });
     }
 
     const map = new mapboxgl.Map({
