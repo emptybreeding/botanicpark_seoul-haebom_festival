@@ -241,6 +241,16 @@
       el.addEventListener('touchstart', () => showPopup(m));
     });
 
+    function updateZoomHint() {
+      const zoom = map.getZoom();
+      const hint = document.getElementById('zoom-hint');
+      if (zoom <= 13.0) {
+        hint.style.display = 'block';
+      } else if (zoom >= 16.4) {
+        hint.style.display = 'none';
+      }
+    }
+
     function updateMarkerVisibility() {
       const zoom = map.getZoom();
       markerElements.forEach((m, i) => {
@@ -250,16 +260,6 @@
         blueDotMarkers[i].style.visibility = show ? 'hidden' : 'visible';
         blueDotMarkers[i].style.opacity = show ? 0 : 1;
       });
-    }
-
-    function updateZoomHint() {
-      const zoom = map.getZoom();
-      const hint = document.getElementById('zoom-hint');
-      if (zoom <= 15.2) {
-        hint.style.display = 'block';
-      } else if (zoom >= 16.3) {
-        hint.style.display = 'none';
-      }
     }
 
     function showPopup(markerData, isImageExpanded = false) {
