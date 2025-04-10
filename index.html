@@ -33,7 +33,7 @@
       border-radius: 8px;
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-      z-index: 1500;
+      z-index: 2001;
     }
 
     #zoom-hint {
@@ -167,6 +167,7 @@
 
     function enterMap() {
       document.getElementById('prologue').style.display = 'none';
+      document.getElementById('enter-button').style.display = 'none'; // 버튼도 숨김
       const mapEl = document.getElementById('map');
       mapEl.classList.add('visible');
       requestAnimationFrame(() => {
