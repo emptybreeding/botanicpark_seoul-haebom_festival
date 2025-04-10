@@ -147,7 +147,7 @@
 
     #map-title-banner {
       position: absolute;
-      top: 20px;
+      top: 40px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 1500;
@@ -400,7 +400,7 @@
       showPopupIfNearby(longitude, latitude);
     }, error => {
       console.error("Geolocation error:", error);
-      alert("📍 위치 권한이 필요합니다.\n설정에서 허용해 주세요.");
+      alert("📍 위치 권한이 필요합니다. 설정에서 허용해 주세요.");
     }, {
       enableHighAccuracy: true,
       maximumAge: 10000,
