@@ -27,6 +27,22 @@
       font-weight: bold; box-shadow: 0 4px 10px rgba(0,0,0,0.3);
     }
 
+    #zoom-hint {
+      position: absolute;
+      bottom: 100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      color: #448e7a;
+      font-size: 18px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 1500;
+    }
+
     .custom-marker {
       width: 75px; height: 75px; background: none;
       pointer-events: auto; visibility: hidden; opacity: 0;
@@ -124,6 +140,8 @@
     <img src="prologue.jpeg" alt="Intro Image">
     <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
   </div>
+
+  <div id="zoom-hint" style="display: none;">지도를 확대해 주세요</div>
 
   <div id="popup-overlay" style="display: none;">
     <div class="popup-image-wrapper">
@@ -320,6 +338,7 @@
     map.on('zoomend', () => {
       setTimeout(() => isUserInteracting = false, 2000);
       updateMarkerVisibility();
+      updateZoomHint();
       if (userMarker) {
         const userLngLat = userMarker.getLngLat();
         showPopupIfNearby(userLngLat.lng, userLngLat.lat);
