@@ -156,7 +156,7 @@
         }]
       },
       center: [126.8355, 37.5700],
-      zoom: 15,
+      zoom: 15.5,
       bearing: 314
     });
 
@@ -195,12 +195,12 @@
     });
 
     const markers = [
-    { lng: 126.83561, lat: 37.56926, img: 'cns1.png', title: '푸른꿈의 정원', popupImg: 'title1.png' },
-    { lng: 126.83550, lat: 37.56931, img: 'cns2.png', title: '맞이정원', popupImg: 'title2.png' },
+    { lng: 126.83552, lat: 37.56910, img: 'cns1.png', title: '푸른꿈의 정원', popupImg: 'title1.png' },
+    { lng: 126.83554, lat: 37.56941, img: 'cns2.png', title: '맞이정원', popupImg: 'title2.png' },
     { lng: 126.83520, lat: 37.57004, img: 'cs1.png', title: '베란다 정원', popupImg: 'title3.png' },
     { lng: 126.83499, lat: 37.57023, img: 'cs2.png', title: '수집종 전시', popupImg: 'title4.png' },
     { lng: 126.83537, lat: 37.56962, img: 'lw1.png', title: '바이오월 페어', popupImg: 'title5.png' },
-    { lng: 126.83566, lat: 37.56987, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
+    { lng: 126.83554, lat: 37.56983, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
     { lng: 126.83551, lat: 37.57002, img: 'ho1.png', title: '산책 정원', popupImg: 'title7.png' }
     ];
 
@@ -226,7 +226,7 @@
     function updateMarkerVisibility() {
       const zoom = map.getZoom();
       markerElements.forEach((m, i) => {
-        const show = zoom >= 16;
+        const show = zoom >= 17;
         m.el.style.visibility = show ? 'visible' : 'hidden';
         m.el.style.opacity = show ? 1 : 0;
         blueDotMarkers[i].style.visibility = show ? 'hidden' : 'visible';
@@ -267,7 +267,7 @@
       let nearby = false;
       markerElements.forEach(m => {
         const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-        if (zoom >= 16) {
+        if (zoom >= 17) {
           m.inner.classList.remove('bounce');
           if (distance < 20) m.inner.classList.add('bounce');
           if (distance < 10) {
