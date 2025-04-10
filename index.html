@@ -207,6 +207,7 @@
           setTimeout(loadTile, 50);
         } else {
           updateMarkerVisibility();
+          updateZoomHint();
         }
       }
       loadTile();
@@ -255,7 +256,7 @@
     function updateZoomHint() {
       const zoom = map.getZoom();
       const hint = document.getElementById('zoom-hint');
-      if (zoom <= 15.0) {
+      if (zoom <= 0) {
         hint.style.display = 'block';
       } else if (zoom >= 16.4) {
         hint.style.display = 'none';
