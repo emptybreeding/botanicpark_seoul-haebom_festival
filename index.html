@@ -29,7 +29,7 @@
 
     #zoom-hint {
       position: absolute;
-      bottom: 60px;
+      bottom: 40px;
       left: 50%;
       transform: translateX(-50%);
       background: rgba(255, 255, 255, 0.7);
@@ -223,7 +223,7 @@
     { lng: 126.83520, lat: 37.57004, img: 'cs1.png', title: '베란다 정원', popupImg: 'title3.png' },
     { lng: 126.83499, lat: 37.57023, img: 'cs2.png', title: '수집종 전시', popupImg: 'title4.png' },
     { lng: 126.83537, lat: 37.56962, img: 'lw1.png', title: '바이오월 페어', popupImg: 'title5.png' },
-    { lng: 126.83554, lat: 37.56983, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
+    { lng: 126.83546, lat: 37.56981, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
     { lng: 126.83551, lat: 37.57002, img: 'ho1.png', title: '산책 정원', popupImg: 'title7.png' }
     ];
 
@@ -260,7 +260,7 @@
     function updateZoomHint() {
       const zoom = map.getZoom();
       const hint = document.getElementById('zoom-hint');
-      hint.style.display = zoom >= 16.4 ? 'none' : 'block';
+      hint.style.display = zoom >= 16.5 ? 'none' : 'block';
     }
 
     function showPopup(markerData, isImageExpanded = false) {
