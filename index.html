@@ -307,6 +307,7 @@
         popupImage.style.opacity = 0;
         popupImage.src = ''; // 캐시 방지용 초기화
     
+        popupImage.onload = null;
         popupImage.onload = () => {
           popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
