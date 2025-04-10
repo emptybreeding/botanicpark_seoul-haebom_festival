@@ -156,7 +156,7 @@
         }]
       },
       center: [126.8355, 37.5700],
-      zoom: 15.3,
+      zoom: 15.2,
       bearing: 314
     });
 
@@ -226,7 +226,7 @@
     function updateMarkerVisibility() {
       const zoom = map.getZoom();
       markerElements.forEach((m, i) => {
-        const show = zoom >= 16.3;
+        const show = zoom >= 16.4;
         m.el.style.visibility = show ? 'visible' : 'hidden';
         m.el.style.opacity = show ? 1 : 0;
         blueDotMarkers[i].style.visibility = show ? 'hidden' : 'visible';
@@ -267,7 +267,7 @@
       let nearby = false;
       markerElements.forEach(m => {
         const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
-        if (zoom >= 16.3) {
+        if (zoom >= 16.4) {
           m.inner.classList.remove('bounce');
           if (distance < 20) m.inner.classList.add('bounce');
           if (distance < 10) {
