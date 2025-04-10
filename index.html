@@ -126,7 +126,7 @@
       max-height: 100%;
       border-radius: 12px;
       opacity: 0;
-      transition: opacity 0.3s ease;
+      transition: opacity 0.2s ease;
     }
     
     .popup-close {
@@ -278,7 +278,7 @@
       if (activePopup) activePopup.remove();
     
       if (!isImageExpanded) {
-        // 카드 팝업
+        // 카드 팝업 (축소된 정보)
         const container = document.createElement('div');
         container.className = 'popup-card';
     
@@ -298,14 +298,17 @@
           .setDOMContent(container)
           .addTo(map);
       } else {
+        // 전체 이미지 팝업
         const popupOverlay = document.getElementById('popup-overlay');
         const popupImage = document.getElementById('popup-image');
     
-        popupOverlay.style.display = 'flex';
+        // 준비: 숨기고 투명하게
+        popupOverlay.style.display = 'none';
         popupImage.style.opacity = 0;
-        popupImage.src = ''; // 캐시 초기화
+        popupImage.src = ''; // 캐시 방지용 초기화
     
         popupImage.onload = () => {
+          popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
             popupImage.style.opacity = 1;
           });
@@ -313,17 +316,6 @@
     
         popupImage.src = markerData.popupImg;
       }
-    }
-    
-    function closeImagePopup() {
-      const popupOverlay = document.getElementById('popup-overlay');
-      const popupImage = document.getElementById('popup-image');
-    
-      popupImage.style.opacity = 0;
-      setTimeout(() => {
-        popupOverlay.style.display = 'none';
-        popupImage.src = ''; // 안전하게 초기화
-      }, 300); // opacity transition과 맞춤
     }
 
     function closeImagePopup() {
@@ -333,7 +325,7 @@
       image.style.opacity = 0;
       setTimeout(() => {
         overlay.style.display = 'none';
-      }, 300); // transition 시간과 일치
+      }, 200); // transition 시간과 일치
     }
 
     function showPopupIfNearby(userLng, userLat) {
