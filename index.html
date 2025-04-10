@@ -319,7 +319,13 @@
     }
 
     function closeImagePopup() {
-      document.getElementById('popup-overlay').style.display = 'none';
+      const overlay = document.getElementById('popup-overlay');
+      const image = document.getElementById('popup-image');
+    
+      image.style.opacity = 0;
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 300); // transition 시간과 일치
     }
 
     function showPopupIfNearby(userLng, userLat) {
