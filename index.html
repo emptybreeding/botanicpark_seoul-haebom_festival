@@ -161,6 +161,26 @@
       opacity: 0;
     }
 
+    #prologue,
+#enter-button,
+#map {
+  transition: opacity 0.5s ease;
+}
+
+#prologue.fade-out,
+#enter-button.fade-out {
+  opacity: 0;
+}
+
+#map.visible {
+  display: block;
+  opacity: 0;
+}
+
+#map.fade-in {
+  opacity: 1;
+}
+
   </style>
 </head>
 <body>
@@ -186,14 +206,29 @@
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
     function enterMap() {
-      document.getElementById('prologue').style.display = 'none';
-      document.getElementById('enter-button').style.display = 'none';
+      const prologue = document.getElementById('prologue');
+      const enterButton = document.getElementById('enter-button');
       const mapEl = document.getElementById('map');
+    
+      // 시작: 지도 opacity 0 상태에서 visible로
       mapEl.classList.add('visible');
-      requestAnimationFrame(() => {
+      void mapEl.offsetWidth; // 트리거 강제 재계산 (transition 작동 보장용)
+    
+      // 페이드 아웃 트리거
+      prologue.classList.add('fade-out');
+      enterButton.classList.add('fade-out');
+    
+      // 페이드 인 트리거
+      mapEl.classList.add('fade-in');
+    
+      // 페이드 완료 후 prologue 완전히 제거
+      setTimeout(() => {
+        prologue.style.display = 'none';
+        enterButton.style.display = 'none';
+        mapEl.classList.remove('fade-in'); // 초기화
         map.resize();
         updateZoomHint();
-      });
+      }, 500); // CSS의 transition 시간과 동일
     }
 
     const map = new mapboxgl.Map({
