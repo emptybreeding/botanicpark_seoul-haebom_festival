@@ -149,7 +149,6 @@
     <img src="prologue.jpeg" alt="Intro Image">
   </div>
   <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
-  </div>
 
   <div id="zoom-hint" style="display: none;">지도를 확대해 주세요</div>
 
@@ -226,7 +225,6 @@
       }
       loadTile();
     });
-    map.on('zoom', updateZoomHint);
 
     const markers = [
     { lng: 126.83552, lat: 37.56910, img: 'cns1.png', title: '푸른꿈의 정원', popupImg: 'title1.png' },
