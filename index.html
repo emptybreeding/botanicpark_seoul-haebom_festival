@@ -415,10 +415,11 @@
             popupImage.style.opacity = 1;
           });
     
-          // 👉 여기서 버튼 생성 조건
+          viewedPopups.add(markerData.popupImg);
           const epilogueBtnId = 'epilogue-button';
           let existingBtn = document.getElementById(epilogueBtnId);
-          if (markerData.popupImg === 'title7.png') {
+    
+          if ([...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
             if (!existingBtn) {
               const btn = document.createElement('button');
               btn.id = epilogueBtnId;
