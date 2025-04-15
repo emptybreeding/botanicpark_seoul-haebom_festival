@@ -176,7 +176,7 @@
       height: 100vh;
       opacity: 0;
       pointer-events: none;
-      transition: opacity 3s ease;
+      transition: opacity 0.8s ease;
     }
     #map.visible {
       opacity: 1;
@@ -212,15 +212,9 @@
       const enterBtn = document.getElementById('enter-button');
       const mapEl = document.getElementById('map');
     
-      // ✅ 뷰포트 동적 변경 (줌 허용)
-      const metaViewport = document.querySelector("meta[name=viewport]");
-      if (metaViewport) {
-        metaViewport.setAttribute("content", "width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes");
-      }
-    
       // 지도 먼저 활성화 → 뒤에 애니메이션 자연스럽게
       mapEl.classList.add('visible');
-      requestAnimationFrame(() => map.resize());
+      map.resize();
       updateZoomHint();
     
       // 프로로그 페이드 아웃
@@ -232,7 +226,7 @@
       setTimeout(() => {
         prologue.style.display = 'none';
         enterBtn.style.display = 'none';
-      }, 3000);
+      }, 800);
     }
 
     const map = new mapboxgl.Map({
