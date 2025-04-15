@@ -172,12 +172,15 @@
     }
     
     #map {
+      width: 100vw;
+      height: 100vh;
       opacity: 0;
+      pointer-events: none;
       transition: opacity 0.8s ease;
     }
     #map.visible {
       opacity: 1;
-      display: block;
+      pointer-events: auto;
     }
 
   </style>
@@ -204,25 +207,27 @@
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
-function enterMap() {
-  const prologue = document.getElementById('prologue');
-  const enterBtn = document.getElementById('enter-button');
-  const mapEl = document.getElementById('map');
-
-  // 1. 프롤로그 투명도 줄이기
-  prologue.style.opacity = '0';
-  enterBtn.style.opacity = '0';
-
-  // 2. 800ms 뒤에 프롤로그 제거 & 지도 표시
-  setTimeout(() => {
-    prologue.style.display = 'none';
-    enterBtn.style.display = 'none';
-
-    mapEl.classList.add('visible');
-    map.resize();
-    updateZoomHint();
-  }, 800);
-}
+    function enterMap() {
+      const prologue = document.getElementById('prologue');
+      const enterBtn = document.getElementById('enter-button');
+      const mapEl = document.getElementById('map');
+    
+      // 지도 먼저 활성화 → 뒤에 애니메이션 자연스럽게
+      mapEl.classList.add('visible');
+      map.resize();
+      updateZoomHint();
+    
+      // 프로로그 페이드 아웃
+      prologue.style.transition = 'opacity 0.8s ease';
+      prologue.style.opacity = '0';
+      enterBtn.style.opacity = '0';
+    
+      // 일정 시간 뒤 제거
+      setTimeout(() => {
+        prologue.style.display = 'none';
+        enterBtn.style.display = 'none';
+      }, 800);
+    }
 
     const map = new mapboxgl.Map({
       container: 'map',
