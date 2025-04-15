@@ -250,19 +250,22 @@
     function enterMap() {
       const prologue = document.getElementById('prologue');
       const enterBtn = document.getElementById('enter-button');
+      const epilogue = document.getElementById('epilogue');
+      const epilogueBtn = document.getElementById('epilogue-enter-button');
       const mapEl = document.getElementById('map');
     
-      // 지도 먼저 활성화 → 뒤에 애니메이션 자연스럽게
       mapEl.classList.add('visible');
       map.resize();
       updateZoomHint();
     
-      // 프로로그 페이드 아웃
       prologue.style.transition = 'opacity 0.8s ease';
       prologue.style.opacity = '0';
       enterBtn.style.opacity = '0';
     
-      // 일정 시간 뒤 제거
+      // 💥 여기 추가된 부분
+      epilogue.style.display = 'none';
+      epilogueBtn.style.display = 'none';
+    
       setTimeout(() => {
         prologue.style.display = 'none';
         enterBtn.style.display = 'none';
