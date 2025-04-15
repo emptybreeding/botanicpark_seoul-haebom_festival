@@ -8,18 +8,10 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    #map {
-      display: none;
-      width: 100vw;
-      height: 100vh;
-      opacity: 0;
-      transition: opacity 0.8s ease;
-    }
-    
-    #map.visible {
-      display: block;
-      opacity: 1;
-    }
+    body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden;}
+    #map { display: none; width: 100vw; height: 100vh; }
+    #map.visible { display: block; }
+
     
     #prologue {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -201,14 +193,8 @@
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
     function enterMap() {
-      const prologue = document.getElementById('prologue');
-      const enterBtn = document.getElementById('enter-button');
-    
-      // 그냥 바로 사라지게 (애니 없이)
-      prologue.style.display = 'none';
-      enterBtn.style.display = 'none';
-    
-      // 지도 나타나기
+      document.getElementById('prologue').style.display = 'none';
+      document.getElementById('enter-button').style.display = 'none';
       const mapEl = document.getElementById('map');
       mapEl.classList.add('visible');
       requestAnimationFrame(() => {
