@@ -250,8 +250,8 @@
   <div class="popup-close" onclick="closeEpilogue()">&times;</div>
 </div>
 
-<!-- 에필로그 열기 버튼 -->
-<div id="epilogue-button" onclick="showEpilogue()">&#8250;</div>
+<!-- 에필로그 버튼 (기존 위치 유지, 처음엔 숨김 상태) -->
+<div id="epilogue-button" onclick="showEpilogue()" style="display: none;">&#8250;</div>
 
   <div id="map"></div>
 
@@ -388,8 +388,9 @@
         titleBanner.classList.remove('hidden');
       }
     }
-
     function showPopup(markerData, isImageExpanded = false) {
+      const epilogueBtn = document.getElementById('epilogue-button');
+    
       if (activePopup) activePopup.remove();
     
       if (!isImageExpanded) {
@@ -412,21 +413,31 @@
           .setLngLat([markerData.lng, markerData.lat])
           .setDOMContent(container)
           .addTo(map);
+    
+        // 에필로그 버튼 숨기기
+        epilogueBtn.style.display = 'none';
+    
       } else {
         // 전체 이미지 팝업
         const popupOverlay = document.getElementById('popup-overlay');
         const popupImage = document.getElementById('popup-image');
-    
-        // 준비: 숨기고 투명하게
+        
         popupOverlay.style.display = 'none';
         popupImage.style.opacity = 0;
-        popupImage.src = ''; // 캐시 방지용 초기화
+        popupImage.src = '';
     
         popupImage.onload = null;
         popupImage.onload = () => {
           popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
             popupImage.style.opacity = 1;
+    
+            // 💡 title7.png일 때만 > 버튼 보여주기
+            if (markerData.popupImg === 'title7.png') {
+              epilogueBtn.style.display = 'block';
+            } else {
+              epilogueBtn.style.display = 'none';
+            }
           });
         };
     
@@ -441,6 +452,7 @@
       image.style.opacity = 0;
       setTimeout(() => {
         overlay.style.display = 'none';
+        document.getElementById('epilogue-button').style.display = 'none'; // 버튼 숨기기
       }, 100);
     }
 
