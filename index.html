@@ -379,6 +379,8 @@
       }
     }
 
+    const viewedPopups = new Set();
+
     function showPopup(markerData, isImageExpanded = false) {
       if (activePopup) activePopup.remove();
     
@@ -416,29 +418,31 @@
           });
     
           viewedPopups.add(markerData.popupImg);
+
+          // ✅ 조건 검사 후 버튼 생성
           const epilogueBtnId = 'epilogue-button';
           let existingBtn = document.getElementById(epilogueBtnId);
     
-          if ([...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
-            if (!existingBtn) {
-              const btn = document.createElement('button');
-              btn.id = epilogueBtnId;
-              btn.innerText = '에필로그 보기';
-              btn.style.position = 'fixed';
-              btn.style.bottom = '20px';
-              btn.style.right = '20px';
-              btn.style.background = 'rgba(255,255,255,0.95)';
-              btn.style.color = '#448e7a';
-              btn.style.fontSize = '16px';
-              btn.style.padding = '10px 18px';
-              btn.style.border = 'none';
-              btn.style.borderRadius = '8px';
-              btn.style.fontWeight = 'bold';
-              btn.style.zIndex = '2002';
-              btn.onclick = showEpilogue;
-              document.body.appendChild(btn);
-            }
-          } else if (existingBtn) {
+          const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
+    
+          if (allViewed && !existingBtn) {
+            const btn = document.createElement('button');
+            btn.id = epilogueBtnId;
+            btn.innerText = '에필로그 보기';
+            btn.style.position = 'fixed';
+            btn.style.bottom = '20px';
+            btn.style.right = '20px';
+            btn.style.background = 'rgba(255,255,255,0.95)';
+            btn.style.color = '#448e7a';
+            btn.style.fontSize = '16px';
+            btn.style.padding = '10px 18px';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '8px';
+            btn.style.fontWeight = 'bold';
+            btn.style.zIndex = '2002';
+            btn.onclick = showEpilogue;
+            document.body.appendChild(btn);
+          } else if (!allViewed && existingBtn) {
             existingBtn.remove();
           }
         };
