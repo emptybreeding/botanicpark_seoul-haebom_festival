@@ -214,6 +214,7 @@
     
       // 지도 먼저 활성화 → 뒤에 애니메이션 자연스럽게
       mapEl.classList.add('visible');
+      map.scrollZoom.enable();
       map.resize();
       updateZoomHint();
     
@@ -266,6 +267,7 @@
     ];
 
     map.on('load', () => {
+      map.scrollZoom.disable();
       let i = 0;
       function loadTile() {
         if (i < tiles.length) {
