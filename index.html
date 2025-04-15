@@ -8,10 +8,18 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden;}
-    #map { display: none; width: 100vw; height: 100vh; }
-    #map.visible { display: block; }
-
+    #map {
+      display: none;
+      width: 100vw;
+      height: 100vh;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    
+    #map.visible {
+      display: block;
+      opacity: 1;
+    }
     
     #prologue {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -168,15 +176,6 @@
       opacity: 0;
     }
 
-    .fade-out {
-      animation: fadeOut 0.6s ease forwards;
-    }
-    
-    @keyframes fadeOut {
-      from { opacity: 1; }
-      to { opacity: 0; visibility: hidden; }
-    }
-
   </style>
 </head>
 <body>
@@ -205,22 +204,17 @@
       const prologue = document.getElementById('prologue');
       const enterBtn = document.getElementById('enter-button');
     
-      // 페이드 아웃 클래스 추가
-      prologue.classList.add('fade-out');
-      enterBtn.classList.add('fade-out');
+      // 그냥 바로 사라지게 (애니 없이)
+      prologue.style.display = 'none';
+      enterBtn.style.display = 'none';
     
-      // 지도 활성화 및 지연 후 DOM 숨김 처리
-      setTimeout(() => {
-        prologue.style.display = 'none';
-        enterBtn.style.display = 'none';
-        
-        const mapEl = document.getElementById('map');
-        mapEl.classList.add('visible');
-        requestAnimationFrame(() => {
-          map.resize();
-          updateZoomHint();
-        });
-      }, 600); // 애니메이션 지속 시간과 동일
+      // 지도 나타나기
+      const mapEl = document.getElementById('map');
+      mapEl.classList.add('visible');
+      requestAnimationFrame(() => {
+        map.resize();
+        updateZoomHint();
+      });
     }
 
     const map = new mapboxgl.Map({
