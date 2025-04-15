@@ -28,6 +28,33 @@
       transform: translateY(-45px);
     }
 
+    #epilogue {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #5ecfbd; display: flex; justify-content: center;
+      align-items: center; flex-direction: column; z-index: 2000;
+      transition: opacity 0.8s ease;
+    }
+    #epilogue img {
+      width: 100vw; height: 100vh; object-fit: contain;
+      object-position: center; display: block;
+      transform: translateY(-45px);
+    }
+    #epilogue-enter-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      color: #448e7a;
+      font-size: 18px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 2001;
+    }
+
     #enter-button {
       position: absolute;
       bottom: 20px;
@@ -198,6 +225,11 @@
     <img src="prologue.jpeg" alt="Intro Image">
   </div>
   <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
+
+  <div id="epilogue" style="display: none;">
+    <img src="epilogue.jpeg" alt="Epilogue Image">
+  </div>
+  <button id="epilogue-enter-button" onclick="enterMap()" style="display: none;">지도로 돌아가기</button>
 
   <div id="zoom-hint" style="display: none;">지도를 확대해 주세요</div>
 
