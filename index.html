@@ -32,7 +32,9 @@
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
       background: #5ecfbd; display: flex; justify-content: center;
       align-items: center; flex-direction: column; z-index: 2000;
+      opacity: 0;
       transition: opacity 0.8s ease;
+      pointer-events: none;
     }
     #epilogue img {
       width: 100vw; height: 100vh; object-fit: contain;
@@ -53,6 +55,21 @@
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       z-index: 2001;
+    }
+
+    #epilogue.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    #map.visible {
+      opacity: 1;
+      pointer-events: auto;
+      transition: opacity 1s ease;
+    }
+    #map.hidden {
+      opacity: 0;
+      pointer-events: none;
     }
 
     #enter-button {
@@ -446,11 +463,44 @@
     }
     
     function showEpilogue() {
+      const epilogue = document.getElementById('epilogue');
+      const epilogueBtn = document.getElementById('epilogue-enter-button');
+      const mapEl = document.getElementById('map');
+    
       document.getElementById('popup-overlay').style.display = 'none';
-      document.getElementById('epilogue').style.display = 'flex';
-      document.getElementById('epilogue-enter-button').style.display = 'block';
-      const epilogueBtn = document.getElementById('epilogue-button');
-      if (epilogueBtn) epilogueBtn.remove();
+      epilogue.classList.add('visible');
+      epilogueBtn.style.display = 'block';
+    
+      mapEl.classList.remove('visible');
+      mapEl.classList.add('hidden');
+    }
+    
+    function enterMap() {
+      const prologue = document.getElementById('prologue');
+      const enterBtn = document.getElementById('enter-button');
+      const epilogue = document.getElementById('epilogue');
+      const epilogueBtn = document.getElementById('epilogue-enter-button');
+      const mapEl = document.getElementById('map');
+    
+      // fade-out epilogue
+      epilogue.classList.remove('visible');
+    
+      // fade-in map after slight delay
+      setTimeout(() => {
+        mapEl.classList.remove('hidden');
+        mapEl.classList.add('visible');
+        map.resize();
+        updateZoomHint();
+    
+        prologue.style.opacity = '0';
+        enterBtn.style.opacity = '0';
+        prologue.style.display = 'none';
+        enterBtn.style.display = 'none';
+        epilogue.style.display = 'none';
+        epilogueBtn.style.display = 'none';
+    
+        viewedPopups.clear();
+      }, 400);
     }
 
     function closeImagePopup() {
