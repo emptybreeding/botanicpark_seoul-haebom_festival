@@ -465,6 +465,10 @@
       setTimeout(() => {
         overlay.style.display = 'none';
         closeBtn.classList.remove('hidden');
+    
+        // 👉 에필로그 보기 버튼도 같이 제거!
+        const epilogueBtn = document.getElementById('epilogue-button');
+        if (epilogueBtn) epilogueBtn.remove();
       }, 100);
     }
 
