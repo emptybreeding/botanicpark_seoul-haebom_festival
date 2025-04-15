@@ -262,14 +262,35 @@
       prologue.style.opacity = '0';
       enterBtn.style.opacity = '0';
     
-      // 💥 여기 추가된 부분
       epilogue.style.display = 'none';
       epilogueBtn.style.display = 'none';
+    
+      // 💥 여기! 팝업 본 기록 초기화
+      viewedPopups.clear();
     
       setTimeout(() => {
         prologue.style.display = 'none';
         enterBtn.style.display = 'none';
       }, 800);
+    }
+    
+    function closeImagePopup() {
+      const overlay = document.getElementById('popup-overlay');
+      const image = document.getElementById('popup-image');
+      const closeBtn = document.querySelector('.popup-close');
+    
+      image.style.opacity = 0;
+      closeBtn.classList.add('hidden');
+    
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        closeBtn.classList.remove('hidden');
+    
+        const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
+        if (allViewed) {
+          showEpilogue();
+        }
+      }, 100);
     }
 
     const map = new mapboxgl.Map({
