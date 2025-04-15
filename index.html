@@ -167,6 +167,18 @@
     #map-title-banner.hidden {
       opacity: 0;
     }
+    #prologue {
+      transition: opacity 0.8s ease;
+    }
+    
+    #map {
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    #map.visible {
+      opacity: 1;
+      display: block;
+    }
 
   </style>
 </head>
@@ -192,16 +204,25 @@
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
-    function enterMap() {
-      document.getElementById('prologue').style.display = 'none';
-      document.getElementById('enter-button').style.display = 'none';
-      const mapEl = document.getElementById('map');
-      mapEl.classList.add('visible');
-      requestAnimationFrame(() => {
-        map.resize();
-        updateZoomHint();
-      });
-    }
+function enterMap() {
+  const prologue = document.getElementById('prologue');
+  const enterBtn = document.getElementById('enter-button');
+  const mapEl = document.getElementById('map');
+
+  // 1. 프롤로그 투명도 줄이기
+  prologue.style.opacity = '0';
+  enterBtn.style.opacity = '0';
+
+  // 2. 800ms 뒤에 프롤로그 제거 & 지도 표시
+  setTimeout(() => {
+    prologue.style.display = 'none';
+    enterBtn.style.display = 'none';
+
+    mapEl.classList.add('visible');
+    map.resize();
+    updateZoomHint();
+  }, 800);
+}
 
     const map = new mapboxgl.Map({
       container: 'map',
@@ -218,7 +239,7 @@
       zoom: 15.6,
       bearing: 314,
       minZoom: 15,
-      maxZoom: 19.5
+      maxZoom: 19.3
     });
 
     let isUserInteracting = false;
