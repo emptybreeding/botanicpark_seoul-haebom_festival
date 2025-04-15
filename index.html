@@ -168,6 +168,15 @@
       opacity: 0;
     }
 
+    .fade-out {
+      animation: fadeOut 0.6s ease forwards;
+    }
+    
+    @keyframes fadeOut {
+      from { opacity: 1; }
+      to { opacity: 0; visibility: hidden; }
+    }
+
   </style>
 </head>
 <body>
@@ -193,14 +202,25 @@
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
     function enterMap() {
-      document.getElementById('prologue').style.display = 'none';
-      document.getElementById('enter-button').style.display = 'none';
-      const mapEl = document.getElementById('map');
-      mapEl.classList.add('visible');
-      requestAnimationFrame(() => {
-        map.resize();
-        updateZoomHint();
-      });
+      const prologue = document.getElementById('prologue');
+      const enterBtn = document.getElementById('enter-button');
+    
+      // 페이드 아웃 클래스 추가
+      prologue.classList.add('fade-out');
+      enterBtn.classList.add('fade-out');
+    
+      // 지도 활성화 및 지연 후 DOM 숨김 처리
+      setTimeout(() => {
+        prologue.style.display = 'none';
+        enterBtn.style.display = 'none';
+        
+        const mapEl = document.getElementById('map');
+        mapEl.classList.add('visible');
+        requestAnimationFrame(() => {
+          map.resize();
+          updateZoomHint();
+        });
+      }, 600); // 애니메이션 지속 시간과 동일
     }
 
     const map = new mapboxgl.Map({
