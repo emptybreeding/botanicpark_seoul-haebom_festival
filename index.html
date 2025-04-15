@@ -410,10 +410,8 @@
         popupOverlay.style.display = 'none';
         popupImage.style.opacity = 0;
         popupImage.src = '';
-    
-        viewedPopups.add(markerData.popupImg);
-
         popupImage.onload = () => {
+          viewedPopups.add(markerData.popupImg);
           popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
             popupImage.style.opacity = 1;
