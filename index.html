@@ -237,24 +237,18 @@
       pointer-events: auto;
     }
 
-    .glow-touch:active {
-      filter: brightness(1.3) contrast(1.2);
-      transform: scale(1.05);
-      transition: all 0.2s ease;
-    }
-
   </style>
 </head>
 <body>
   <div id="prologue">
     <img src="prologue.jpeg" alt="Intro Image">
   </div>
-  <button id="enter-button" class="glow-touch" onclick="enterMap()">지도로 넘어가기</button>
+  <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
 
   <div id="epilogue" style="display: none;">
     <img src="epilogue.jpeg" alt="Epilogue Image">
   </div>
-  <button id="epilogue-enter-button" class="glow-touch" onclick="enterMap()" style="display: none;">지도로 돌아가기</button>
+  <button id="epilogue-enter-button" onclick="enterMap()" style="display: none;">지도로 돌아가기</button>
 
   <div id="zoom-hint" style="display: none;">지도를 확대해 주세요</div>
 
@@ -386,7 +380,7 @@
 
     markers.forEach(m => {
       const el = document.createElement('div');
-      el.className = 'custom-marker glow-touch';
+      el.className = 'custom-marker';
       const inner = document.createElement('div');
       inner.className = 'marker-inner';
       inner.style.backgroundImage = `url(${m.img})`;
