@@ -469,13 +469,15 @@
     
       document.getElementById('popup-overlay').style.display = 'none';
     
-      epilogue.style.display = 'flex';
-    
-      epilogue.classList.add('visible');
+      epilogue.style.display = 'flex'; // 먼저 display만
       epilogueBtn.style.display = 'block';
     
-      mapEl.classList.remove('visible');
-      mapEl.classList.add('hidden');
+      // 다음 프레임에서 opacity 전환 실행 (부드럽게)
+      requestAnimationFrame(() => {
+        epilogue.classList.add('visible');
+        mapEl.classList.remove('visible');
+        mapEl.classList.add('hidden');
+      });
     }
     
     function enterMap() {
