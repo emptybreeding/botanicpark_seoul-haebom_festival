@@ -411,14 +411,13 @@
         popupImage.style.opacity = 0;
         popupImage.src = '';
     
+        viewedPopups.add(markerData.popupImg);
+        
         popupImage.onload = () => {
           popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
             popupImage.style.opacity = 1;
           });
-    
-          viewedPopups.add(markerData.popupImg);
-
           // ✅ 조건 검사 후 버튼 생성
           const epilogueBtnId = 'epilogue-button';
           let existingBtn = document.getElementById(epilogueBtnId);
