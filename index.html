@@ -410,12 +410,42 @@
         popupOverlay.style.display = 'none';
         popupImage.style.opacity = 0;
         popupImage.src = '';
+    
+        viewedPopups.add(markerData.popupImg);
+        
         popupImage.onload = () => {
-          viewedPopups.add(markerData.popupImg);
           popupOverlay.style.display = 'flex';
           requestAnimationFrame(() => {
             popupImage.style.opacity = 1;
           });
+          // ✅ 조건 검사 후 버튼 생성
+          const epilogueBtnId = 'epilogue-button';
+          let existingBtn = document.getElementById(epilogueBtnId);
+    
+          const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
+    
+          if (allViewed && !existingBtn) {
+            const btn = document.createElement('button');
+            btn.id = epilogueBtnId;
+            btn.innerText = '에필로그 보기';
+            btn.style.position = 'fixed';
+            btn.style.bottom = '20px';
+            btn.style.right = '20px';
+            btn.style.background = 'rgba(255,255,255,0.95)';
+            btn.style.color = '#448e7a';
+            btn.style.fontSize = '16px';
+            btn.style.padding = '10px 18px';
+            btn.style.border = 'none';
+            btn.style.borderRadius = '8px';
+            btn.style.fontWeight = 'bold';
+            btn.style.zIndex = '2002';
+            btn.onclick = showEpilogue;
+            document.body.appendChild(btn);
+          } else if (!allViewed && existingBtn) {
+            existingBtn.remove();
+          }
+        };
+    
         popupImage.src = markerData.popupImg;
       }
     }
@@ -440,11 +470,9 @@
         overlay.style.display = 'none';
         closeBtn.classList.remove('hidden');
     
-        // ✅ 모든 이미지 봤다면 자동으로 에필로그로 전환
-        const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
-        if (allViewed) {
-          showEpilogue();
-        }
+        // 👉 에필로그 보기 버튼도 같이 제거!
+        const epilogueBtn = document.getElementById('epilogue-button');
+        if (epilogueBtn) epilogueBtn.remove();
       }, 100);
     }
 
