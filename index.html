@@ -55,6 +55,7 @@
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       z-index: 2001;
+      transition: opacity 0.5s ease;
     }
 
     #epilogue.visible {
@@ -86,6 +87,7 @@
       font-weight: bold;
       box-shadow: 0 4px 10px rgba(0,0,0,0.3);
       z-index: 2001;
+      transition: opacity 0.5s ease;
     }
 
     #zoom-hint {
@@ -271,24 +273,27 @@
       const epilogueBtn = document.getElementById('epilogue-enter-button');
       const mapEl = document.getElementById('map');
     
+      // 지도 활성화
       mapEl.classList.add('visible');
       map.resize();
       updateZoomHint();
     
       prologue.style.transition = 'opacity 0.8s ease';
       prologue.style.opacity = '0';
+    
+      enterBtn.style.transition = 'opacity 0.5s ease';
+      epilogueBtn.style.transition = 'opacity 0.5s ease';
       enterBtn.style.opacity = '0';
-    
-      epilogue.style.display = 'none';
-      epilogueBtn.style.display = 'none';
-    
-      // 💥 여기! 팝업 본 기록 초기화
-      viewedPopups.clear();
+      epilogueBtn.style.opacity = '0';
     
       setTimeout(() => {
         prologue.style.display = 'none';
         enterBtn.style.display = 'none';
-      }, 800);
+        epilogue.style.display = 'none';
+        epilogueBtn.style.display = 'none';
+      }, 500);
+    
+      viewedPopups.clear();
     }
     
     function closeImagePopup() {
