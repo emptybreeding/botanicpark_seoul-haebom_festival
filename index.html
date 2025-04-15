@@ -151,6 +151,12 @@
       text-align: center;
       border-radius: 50%;
       background: rgba(255,255,255, 0.3);
+      opacity: 1;
+      transition: opacity 0.1s ease;
+    }
+
+    .popup-close.hidden {
+      opacity: 0;
     }
 
     #map-title-banner {
@@ -385,10 +391,14 @@
     function closeImagePopup() {
       const overlay = document.getElementById('popup-overlay');
       const image = document.getElementById('popup-image');
+      const closeBtn = document.querySelector('.popup-close');
     
       image.style.opacity = 0;
+      closeBtn.classList.add('hidden');
+    
       setTimeout(() => {
         overlay.style.display = 'none';
+        closeBtn.classList.remove('hidden');
       }, 100);
     }
 
