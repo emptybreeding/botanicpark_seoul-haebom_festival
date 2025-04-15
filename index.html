@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>botanicpark_seoul-haebom_festival</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
+  <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
+  <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
+  <style>
+    body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden;}
+    #map { display: none; width: 100vw; height: 100vh; }
+    #map.visible { display: block; }
+
+    
+    #prologue {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: #5ecfbd; display: flex; justify-content: center;
+      align-items: center; flex-direction: column; z-index: 2000;
+    }
+    
+    #prologue img {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
+      object-position: center;
+      display: block;
+      transform: translateY(-45px);
+    }
+
+    #enter-button {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.9);
+      color: #448e7a;
+      font-size: 18px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 2001;
+    }
+
+    #zoom-hint {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(255, 255, 255, 0.7);
+      color: #448e7a;
+      font-size: 18px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      z-index: 1500;
+    }
+
+    .custom-marker {
+      width: 75px; height: 75px; background: none;
+      pointer-events: auto; visibility: hidden; opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
+    }
+    .marker-inner {
+      width: 100%; height: 100%; background-size: contain;
+      background-repeat: no-repeat; background-position: center;
+      transform-origin: bottom center; will-change: transform;
+    }
+    .user-marker-inner {
+      width: 95px; height: 95px;
+    }
+    .blue-dot {
+      width: 10px; height: 10px; background-color: rgba(68, 142, 122, 0.4);
+      border: 2px solid white; border-radius: 50%;
+      box-shadow: 0 0 10px 5px rgba(68, 142, 122, 0.3), 0 0 30px 15px rgba(68, 142, 122, 0.2);
+      visibility: hidden; opacity: 0;
+      transition: visibility 0s, opacity 0.3s ease-in-out;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-12px); }
+    }
+    .bounce { animation: bounce 0.6s infinite; }
+
+    .mapboxgl-popup-tip { display: none !important; }
+    .mapboxgl-popup-content { background: transparent; box-shadow: none; padding: 0; }
+    .mapboxgl-popup-close-button { display: none; }
+
+    .popup-card {
+      font-family: "Noto Sans KR", sans-serif;
+      background: white; border-radius: 16px; padding: 12px 16px;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.25); position: relative;
+      max-width: 280px; text-align: center;
+    }
+    .popup-title {
+      font-size: 1.2em; font-weight: 700; color: #448e7a; margin-bottom: 8px;
+    }
+    .popup-more {
+      font-size: 0.95em; color: #448e7a; cursor: pointer; font-weight: 500;
+      border-top: 1px solid #eee; padding-top: 8px; text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    #popup-overlay {
+      position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.4); z-index: 1000; display: flex;
+      justify-content: center; align-items: center;
+    }
+    .popup-image-wrapper {
+      position: relative;
+      padding: 0px;
+      transform: translateY(-20px);
+      border-radius: 16px;
+      max-width: 90vw;
+      max-height: 80vh;
+      opacity: 0;
+      animation: fadeInPopup 0.4s ease-out forwards;
+    }
+    
+    @keyframes fadeInPopup {
+      to {
+        opacity: 1;
+      }
+    }
+    
+    #popup-image {
+      max-width: 80vw;
+      max-height: 80vh;
+      border-radius: 12px;
+      object-fit: contain;
+      opacity: 0;
+      transition: opacity 0.1s ease;
+    }
+    
+    .popup-close {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      font-size: 40px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+      width: 40px;
+      height: 40px;
+      line-height: 40px;
+      text-align: center;
+      border-radius: 50%;
+    }
+
+    #map-title-banner {
+      position: absolute;
+      top: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 1500;
+      width: 65vw;
+      max-width: 300px;
+      pointer-events: none;
+      opacity: 1;
+      transition: opacity 0.4s ease;
+    }
+    #map-title-banner.hidden {
+      opacity: 0;
+    }
+    #prologue {
+      transition: opacity 0.8s ease;
+    }
+    
+    #map {
+      width: 100vw;
+      height: 100vh;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 3s ease;
+    }
+    #map.visible {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+  </style>
+</head>
+<body>
+  <div id="prologue">
+    <img src="prologue.jpeg" alt="Intro Image">
+  </div>
+  <button id="enter-button" onclick="enterMap()">지도로 넘어가기</button>
+
+  <div id="zoom-hint" style="display: none;">지도를 확대해 주세요</div>
+
+  <div id="popup-overlay" style="display: none;">
+    <div class="popup-image-wrapper">
+      <img id="popup-image" src="" alt="popup" />
+      <div class="popup-close" onclick="closeImagePopup()">&times;</div>
+    </div>
+  </div>
+
+  <div id="map"></div>
+
+  <img id="map-title-banner" src="mt1.png" alt="2025 해봄 타이틀" />
+
+  <script>
+    mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
+
+    function enterMap() {
+      const prologue = document.getElementById('prologue');
+      const enterBtn = document.getElementById('enter-button');
+      const mapEl = document.getElementById('map');
+    
+      // 지도 먼저 활성화 → 뒤에 애니메이션 자연스럽게
+      mapEl.classList.add('visible');
+      map.resize();
+      updateZoomHint();
+    
+      // 프로로그 페이드 아웃
+      prologue.style.transition = 'opacity 0.8s ease';
+      prologue.style.opacity = '0';
+      enterBtn.style.opacity = '0';
+    
+      // 일정 시간 뒤 제거
+      setTimeout(() => {
+        prologue.style.display = 'none';
+        enterBtn.style.display = 'none';
+      }, 3000);
+    }
+
+    const map = new mapboxgl.Map({
+      container: 'map',
+      style: {
+        version: 8,
+        sources: {},
+        layers: [{
+          id: 'background',
+          type: 'background',
+          paint: { 'background-color': '#448e7a' }
+        }]
+      },
+      center: [126.8355, 37.5700],
+      zoom: 15.6,
+      bearing: 314,
+      minZoom: 15,
+      maxZoom: 19.3
+    });
+
+    let isUserInteracting = false;
+    let userMarker = null;
+    let activePopup = null;
+    const markerElements = [];
+    const blueDotMarkers = [];
+
+    const tiles = [
+      { id: 'tile_0_0', url: 'tile_0_0.jpeg', coords: [[126.83163, 37.57312], [126.83427, 37.57312], [126.83427, 37.57103], [126.83163, 37.57103]] },
+      { id: 'tile_0_1', url: 'tile_0_1.jpeg', coords: [[126.83427, 37.57312], [126.83691, 37.57312], [126.83691, 37.57103], [126.83427, 37.57103]] },
+      { id: 'tile_0_2', url: 'tile_0_2.jpeg', coords: [[126.83691, 37.57312], [126.83955, 37.57312], [126.83955, 37.57103], [126.83691, 37.57103]] },
+      { id: 'tile_1_0', url: 'tile_1_0.jpeg', coords: [[126.83163, 37.57103], [126.83427, 37.57103], [126.83427, 37.56893], [126.83163, 37.56893]] },
+      { id: 'tile_1_1', url: 'tile_1_1.jpeg', coords: [[126.83427, 37.57103], [126.83691, 37.57103], [126.83691, 37.56893], [126.83427, 37.56893]] },
+      { id: 'tile_1_2', url: 'tile_1_2.jpeg', coords: [[126.83691, 37.57103], [126.83955, 37.57103], [126.83955, 37.56893], [126.83691, 37.56893]] },
+      { id: 'tile_2_0', url: 'tile_2_0.jpeg', coords: [[126.83163, 37.56893], [126.83427, 37.56893], [126.83427, 37.56684], [126.83163, 37.56684]] },
+      { id: 'tile_2_1', url: 'tile_2_1.jpeg', coords: [[126.83427, 37.56893], [126.83691, 37.56893], [126.83691, 37.56684], [126.83427, 37.56684]] },
+      { id: 'tile_2_2', url: 'tile_2_2.jpeg', coords: [[126.83691, 37.56893], [126.83955, 37.56893], [126.83955, 37.56684], [126.83691, 37.56684]] }
+    ];
+
+    map.on('load', () => {
+      let i = 0;
+      function loadTile() {
+        if (i < tiles.length) {
+          const tile = tiles[i];
+          map.addSource(tile.id, { type: 'image', url: tile.url, coordinates: tile.coords });
+          map.addLayer({ id: tile.id, type: 'raster', source: tile.id, paint: { 'raster-opacity': 1 } });
+          i++;
+          setTimeout(loadTile, 50);
+        } else {
+          updateMarkerVisibility();
+          updateZoomHint();
+        }
+      }
+      loadTile();
+    });
+
+    const markers = [
+    { lng: 126.83552, lat: 37.56910, img: 'cns1.png', title: '푸른꿈의 정원', popupImg: 'title1.png' },
+    { lng: 126.83554, lat: 37.56941, img: 'cns2.png', title: '맞이정원', popupImg: 'title2.png' },
+    { lng: 126.83520, lat: 37.57004, img: 'cs1.png', title: '베란다 정원', popupImg: 'title3.png' },
+    { lng: 126.83499, lat: 37.57023, img: 'cs2.png', title: '수집종 전시', popupImg: 'title4.png' },
+    { lng: 126.83537, lat: 37.56962, img: 'lw1.png', title: '바이오월 페어', popupImg: 'title5.png' },
+    { lng: 126.83546, lat: 37.56981, img: 'lw2.png', title: '구름 정원', popupImg: 'title6.png' },
+    { lng: 126.83551, lat: 37.57002, img: 'ho1.png', title: '산책 정원', popupImg: 'title7.png' }
+    ];
+
+    markers.forEach(m => {
+      const el = document.createElement('div');
+      el.className = 'custom-marker';
+      const inner = document.createElement('div');
+      inner.className = 'marker-inner';
+      inner.style.backgroundImage = `url(${m.img})`;
+      el.appendChild(inner);
+      new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([m.lng, m.lat]).addTo(map);
+      markerElements.push({ el, inner, lng: m.lng, lat: m.lat, title: m.title, popupImg: m.popupImg });
+
+      const blueDot = document.createElement('div');
+      blueDot.className = 'blue-dot';
+      new mapboxgl.Marker(blueDot).setLngLat([m.lng, m.lat]).addTo(map);
+      blueDotMarkers.push(blueDot);
+
+      el.addEventListener('click', () => showPopup(m));
+      el.addEventListener('touchstart', () => showPopup(m));
+    });
+
+    function updateMarkerVisibility() {
+      const zoom = map.getZoom();
+      markerElements.forEach((m, i) => {
+        const show = zoom >= 16.4;
+        m.el.style.visibility = show ? 'visible' : 'hidden';
+        m.el.style.opacity = show ? 1 : 0;
+        blueDotMarkers[i].style.visibility = show ? 'hidden' : 'visible';
+        blueDotMarkers[i].style.opacity = show ? 0 : 1;
+      });
+    }
+
+    function updateZoomHint() {
+      const zoom = map.getZoom();
+      const hint = document.getElementById('zoom-hint');
+      const titleBanner = document.getElementById('map-title-banner');
+    
+      hint.style.display = zoom >= 16.5 ? 'none' : 'block';
+    
+      if (zoom >= 16.4) {
+        titleBanner.classList.add('hidden');
+      } else {
+        titleBanner.classList.remove('hidden');
+      }
+    }
+
+    function showPopup(markerData, isImageExpanded = false) {
+      if (activePopup) activePopup.remove();
+    
+      if (!isImageExpanded) {
+        // 카드 팝업 (축소된 정보)
+        const container = document.createElement('div');
+        container.className = 'popup-card';
+    
+        const title = document.createElement('div');
+        title.className = 'popup-title';
+        title.innerHTML = markerData.title;
+        container.appendChild(title);
+    
+        const moreBtn = document.createElement('div');
+        moreBtn.className = 'popup-more';
+        moreBtn.innerText = '더보기';
+        moreBtn.onclick = () => showPopup(markerData, true);
+        container.appendChild(moreBtn);
+    
+        activePopup = new mapboxgl.Popup({ offset: [0, -65], closeButton: false })
+          .setLngLat([markerData.lng, markerData.lat])
+          .setDOMContent(container)
+          .addTo(map);
+      } else {
+        // 전체 이미지 팝업
+        const popupOverlay = document.getElementById('popup-overlay');
+        const popupImage = document.getElementById('popup-image');
+    
+        // 준비: 숨기고 투명하게
+        popupOverlay.style.display = 'none';
+        popupImage.style.opacity = 0;
+        popupImage.src = ''; // 캐시 방지용 초기화
+    
+        popupImage.onload = null;
+        popupImage.onload = () => {
+          popupOverlay.style.display = 'flex';
+          requestAnimationFrame(() => {
+            popupImage.style.opacity = 1;
+          });
+        };
+    
+        popupImage.src = markerData.popupImg;
+      }
+    }
+
+    function closeImagePopup() {
+      const overlay = document.getElementById('popup-overlay');
+      const image = document.getElementById('popup-image');
+    
+      image.style.opacity = 0;
+      setTimeout(() => {
+        overlay.style.display = 'none';
+      }, 100);
+    }
+
+    function showPopupIfNearby(userLng, userLat) {
+      const zoom = map.getZoom();
+      let nearby = false;
+      markerElements.forEach(m => {
+        const distance = turf.distance([userLng, userLat], [m.lng, m.lat], { units: 'meters' });
+        if (zoom >= 16.4) {
+          m.inner.classList.remove('bounce');
+          if (distance < 20) m.inner.classList.add('bounce');
+          if (distance < 15) {
+            nearby = true;
+            if (!activePopup || activePopup._lngLat.lng !== m.lng || activePopup._lngLat.lat !== m.lat) {
+              showPopup(m);
+            }
+          }
+        } else {
+          m.inner.classList.remove('bounce');
+        }
+      });
+      if (!nearby && activePopup) {
+        activePopup.remove();
+        activePopup = null;
+      }
+    }
+
+    navigator.geolocation.watchPosition((position) => {
+      const { latitude, longitude } = position.coords;
+      if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
+
+      if (!userMarker) {
+        const el = document.createElement('div');
+        el.className = 'custom-marker';
+        el.style.visibility = 'visible';
+        el.style.opacity = 1;
+        const inner = document.createElement('div');
+        inner.className = 'marker-inner user-marker-inner';
+        inner.style.backgroundImage = 'url(dung1.gif)';
+        el.appendChild(inner);
+        userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
+      } else {
+        userMarker.setLngLat([longitude, latitude]);
+      }
+      showPopupIfNearby(longitude, latitude);
+    }, error => {
+      console.error("Geolocation error:", error);
+      if (error.code === 1) {
+        alert("📍 위치 권한이 필요합니다.\n설정에서 허용해 주세요.");
+      } else if (error.code === 2) {
+        alert("🌐 위치 정보를 가져올 수 없습니다.\n인터넷 연결을 확인해 주세요.");
+      } else if (error.code === 3) {
+        alert("⏳ 위치 요청 시간이 초과되었습니다.");
+      }
+    }, {
+      enableHighAccuracy: true,
+      maximumAge: 10000,
+      timeout: 10000
+    });
+
+    map.on('dragstart', () => isUserInteracting = true);
+    map.on('zoomstart', () => isUserInteracting = true);
+    map.on('touchstart', () => isUserInteracting = true);
+    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
+    map.on('zoomend', () => {
+      setTimeout(() => isUserInteracting = false, 2000);
+      updateMarkerVisibility();
+      updateZoomHint();
+      if (userMarker) {
+        const userLngLat = userMarker.getLngLat();
+        showPopupIfNearby(userLngLat.lng, userLngLat.lat);
+      }
+    });
+
+    window.onerror = function(msg, url, line, col, error) {
+      console.log("Global Error:", msg, line, col);
+    };
+  </script>
+</body>
+</html>
