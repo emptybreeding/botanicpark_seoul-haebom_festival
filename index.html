@@ -492,6 +492,8 @@
       epilogue.style.display = 'flex'; // 먼저 display만
       epilogueBtn.style.display = 'block';
 
+      viewedPopups.clear();
+      
       document.getElementById('epilogue-again-button').style.display = 'none';
       
       requestAnimationFrame(() => {
@@ -528,8 +530,6 @@
         if ([...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
           document.getElementById('epilogue-again-button').style.display = 'block';
         }
-
-        viewedPopups.clear();
       }, 400);
     }
 
