@@ -489,11 +489,13 @@
     
       epilogue.style.display = 'flex'; // 먼저 display만
       epilogueBtn.style.display = 'block';
-
+    
+      epilogueSeen = true; // ✅ 한 번이라도 본 적 기록
+    
       viewedPopups.clear();
-      
+    
       document.getElementById('epilogue-again-button').style.display = 'none';
-      
+    
       requestAnimationFrame(() => {
         epilogue.classList.add('visible');
         mapEl.classList.remove('visible');
@@ -525,7 +527,8 @@
         epilogue.style.display = 'none';
         epilogueBtn.style.display = 'none';
     
-        if ([...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
+        // ✅ 한 번이라도 봤으면 에필로그 보기 버튼 다시 보이게
+        if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
           document.getElementById('epilogue-again-button').style.display = 'block';
         }
       }, 400);
