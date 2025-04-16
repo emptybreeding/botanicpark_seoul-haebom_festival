@@ -262,6 +262,22 @@
 
   <img id="map-title-banner" src="mt1.png" alt="2025 해봄 타이틀" />
 
+  <button id="epilogue-again-button" style="
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #448e7a;
+  font-size: 16px;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  display: none;
+  z-index: 2002;
+" onclick="showEpilogue()">에필로그 보기</button>
+
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
 
@@ -475,8 +491,9 @@
     
       epilogue.style.display = 'flex'; // 먼저 display만
       epilogueBtn.style.display = 'block';
-    
-      // 다음 프레임에서 opacity 전환 실행 (부드럽게)
+
+      document.getElementById('epilogue-again-button').style.display = 'none';
+      
       requestAnimationFrame(() => {
         epilogue.classList.add('visible');
         mapEl.classList.remove('visible');
@@ -508,6 +525,10 @@
         epilogue.style.display = 'none';
         epilogueBtn.style.display = 'none';
     
+        if ([...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
+          document.getElementById('epilogue-again-button').style.display = 'block';
+        }
+
         viewedPopups.clear();
       }, 400);
     }
