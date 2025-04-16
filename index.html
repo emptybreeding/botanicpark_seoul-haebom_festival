@@ -448,9 +448,17 @@
       }
     
       if (epilogueBtnAgain) {
-        epilogueBtnAgain.style.display = zoom >= 16.4 &&
-          (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`)))
-          ? 'block' : 'none';
+        const shouldShow =
+          zoom >= 16.4 &&
+          (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`)));
+    
+        if (shouldShow) {
+          epilogueBtnAgain.classList.add('show');
+          epilogueBtnAgain.classList.remove('hide');
+        } else {
+          epilogueBtnAgain.classList.remove('show');
+          epilogueBtnAgain.classList.add('hide');
+        }
       }
     }
 
