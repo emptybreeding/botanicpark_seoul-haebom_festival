@@ -349,7 +349,7 @@
     let isUserInteracting = false;
     let userMarker = null;
     let activePopup = null;
-    let epilogueSeen = false; 
+    
     const markerElements = [];
     const blueDotMarkers = [];
 
@@ -422,19 +422,26 @@
       });
     }
 
-    function updateZoomHint() {
-      const zoom = map.getZoom();
-      const hint = document.getElementById('zoom-hint');
-      const titleBanner = document.getElementById('map-title-banner');
-    
-      hint.style.display = zoom >= 16.5 ? 'none' : 'block';
-    
-      if (zoom >= 16.4) {
-        titleBanner.classList.add('hidden');
-      } else {
-        titleBanner.classList.remove('hidden');
-      }
-    }
+function updateZoomHint() {
+  const zoom = map.getZoom();
+  const hint = document.getElementById('zoom-hint');
+  const titleBanner = document.getElementById('map-title-banner');
+  const epilogueBtnAgain = document.getElementById('epilogue-again-button');
+
+  hint.style.display = zoom >= 16.5 ? 'none' : 'block';
+
+  if (zoom >= 16.4) {
+    titleBanner.classList.add('hidden');
+  } else {
+    titleBanner.classList.remove('hidden');
+  }
+
+  if (epilogueBtnAgain) {
+    epilogueBtnAgain.style.display = zoom >= 16.4 &&
+      (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`)))
+      ? 'block' : 'none';
+  }
+}
 
     const viewedPopups = new Set();
 
