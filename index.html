@@ -62,7 +62,32 @@
       opacity: 1;
       pointer-events: auto;
     }
-    
+
+    #epilogue-again-button {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: rgba(255, 255, 255, 0.9);
+      color: #448e7a;
+      font-size: 16px;
+      padding: 10px 18px;
+      border: none;
+      border-radius: 8px;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      display: none;
+      opacity: 0;
+      transition: opacity 0.4s ease;
+      z-index: 2002;
+    }
+    #epilogue-again-button.show {
+      display: block;
+      opacity: 1;
+    }
+    #epilogue-again-button.hide {
+      opacity: 0;
+    }
+
     #map.visible {
       opacity: 1;
       pointer-events: auto;
@@ -262,21 +287,7 @@
 
   <img id="map-title-banner" src="mt1.png" alt="2025 해봄 타이틀" />
 
-  <button id="epilogue-again-button" style="
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #448e7a;
-  font-size: 16px;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-  display: none;
-  z-index: 2002;
-" onclick="showEpilogue()">에필로그 보기</button>
+  <button id="epilogue-again-button" onclick="showEpilogue()">에필로그 보기</button>
 
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
@@ -422,26 +433,26 @@
       });
     }
 
-function updateZoomHint() {
-  const zoom = map.getZoom();
-  const hint = document.getElementById('zoom-hint');
-  const titleBanner = document.getElementById('map-title-banner');
-  const epilogueBtnAgain = document.getElementById('epilogue-again-button');
-
-  hint.style.display = zoom >= 16.5 ? 'none' : 'block';
-
-  if (zoom >= 16.4) {
-    titleBanner.classList.add('hidden');
-  } else {
-    titleBanner.classList.remove('hidden');
-  }
-
-  if (epilogueBtnAgain) {
-    epilogueBtnAgain.style.display = zoom >= 16.4 &&
-      (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`)))
-      ? 'block' : 'none';
-  }
-}
+    function updateZoomHint() {
+      const zoom = map.getZoom();
+      const hint = document.getElementById('zoom-hint');
+      const titleBanner = document.getElementById('map-title-banner');
+      const epilogueBtnAgain = document.getElementById('epilogue-again-button');
+    
+      hint.style.display = zoom >= 16.5 ? 'none' : 'block';
+    
+      if (zoom >= 16.4) {
+        titleBanner.classList.add('hidden');
+      } else {
+        titleBanner.classList.remove('hidden');
+      }
+    
+      if (epilogueBtnAgain) {
+        epilogueBtnAgain.style.display = zoom >= 16.4 &&
+          (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`)))
+          ? 'block' : 'none';
+      }
+    }
 
     const viewedPopups = new Set();
 
