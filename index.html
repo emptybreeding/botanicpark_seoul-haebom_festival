@@ -608,15 +608,10 @@
         activePopup = null;
       }
     }
-    let hasCenteredOnce = false;
 
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
-
-      if (!isUserInteracting && !hasCenteredOnce) {
-        map.easeTo({ center: [longitude, latitude], duration: 600 });
-        hasCenteredOnce = true;
-      }
+      if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
 
       if (!userMarker) {
         const el = document.createElement('div');
@@ -643,16 +638,16 @@
       }
     }, {
       enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 5000
+      maximumAge: 10000,
+      timeout: 10000
     });
 
     map.on('dragstart', () => isUserInteracting = true);
     map.on('zoomstart', () => isUserInteracting = true);
     map.on('touchstart', () => isUserInteracting = true);
-    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 3000));
+    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
     map.on('zoomend', () => {
-setTimeout(() => isUserInteracting = false, 3000);
+      setTimeout(() => isUserInteracting = false, 2000);
       updateMarkerVisibility();
       updateZoomHint();
       if (userMarker) {
