@@ -609,34 +609,38 @@
       }
     }
 
+    let lastPosition = null;
+
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
-      if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 500 });
-
-      if (!userMarker) {
-        const el = document.createElement('div');
-        el.className = 'custom-marker';
-        el.style.visibility = 'visible';
-        el.style.opacity = 1;
-        const inner = document.createElement('div');
-        inner.className = 'marker-inner user-marker-inner';
-        inner.style.backgroundImage = 'url(dung1.gif)';
-        el.appendChild(inner);
-        userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
-      } else {
-        userMarker.setLngLat([longitude, latitude]);
+    
+      if (
+        !lastPosition ||
+        turf.distance([lastPosition.lng, lastPosition.lat], [longitude, latitude]) > 1 // meters
+      ) {
+        lastPosition = { lng: longitude, lat: latitude };
+    
+        if (!isUserInteracting) {
+          map.easeTo({ center: [longitude, latitude], duration: 200 });
+        }
+    
+        if (!userMarker) {
+          const el = document.createElement('div');
+          el.className = 'custom-marker';
+          el.style.visibility = 'visible';
+          el.style.opacity = 1;
+          const inner = document.createElement('div');
+          inner.className = 'marker-inner user-marker-inner';
+          inner.style.backgroundImage = 'url(dung1.gif)';
+          el.appendChild(inner);
+          userMarker = new mapboxgl.Marker(el, { offset: [0, -25] }).setLngLat([longitude, latitude]).addTo(map);
+        } else {
+          userMarker.setLngLat([longitude, latitude]);
+        }
+    
+        showPopupIfNearby(longitude, latitude);
       }
-      showPopupIfNearby(longitude, latitude);
-    }, error => {
-      console.error("Geolocation error:", error);
-      if (error.code === 1) {
-        alert("📍 위치 권한이 필요합니다.\n설정에서 허용해 주세요.");
-      } else if (error.code === 2) {
-        alert("🌐 위치 정보를 가져올 수 없습니다.\n인터넷 연결을 확인해 주세요.");
-      } else if (error.code === 3) {
-        alert("⏳ 위치 요청 시간이 초과되었습니다.");
-      }
-    }, {
+    }, errorHandler, {
       enableHighAccuracy: true,
       maximumAge: 0,
       timeout: 5000
