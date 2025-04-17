@@ -612,12 +612,11 @@
 
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
-
-      if (!isUserInteracting && !hasCenteredOnce) {
-        map.easeTo({ center: [longitude, latitude], duration: 600 });
-        hasCenteredOnce = true;
+    
+      if (!isUserInteracting) {
+        map.easeTo({ center: [longitude, latitude], duration: 150 });
       }
-
+    
       if (!userMarker) {
         const el = document.createElement('div');
         el.className = 'custom-marker';
@@ -631,16 +630,11 @@
       } else {
         userMarker.setLngLat([longitude, latitude]);
       }
+    
       showPopupIfNearby(longitude, latitude);
     }, error => {
       console.error("Geolocation error:", error);
-      if (error.code === 1) {
-        alert("📍 위치 권한이 필요합니다.\n설정에서 허용해 주세요.");
-      } else if (error.code === 2) {
-        alert("🌐 위치 정보를 가져올 수 없습니다.\n인터넷 연결을 확인해 주세요.");
-      } else if (error.code === 3) {
-        alert("⏳ 위치 요청 시간이 초과되었습니다.");
-      }
+      alert("📍 위치 정보를 불러올 수 없습니다.");
     }, {
       enableHighAccuracy: true,
       maximumAge: 0,
