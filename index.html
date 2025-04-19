@@ -609,14 +609,23 @@
         activePopup = null;
       }
     }
+    
     let hasCenteredOnce = false;
+    let firstLocationReceived = false;
 
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
 
-      if (!isUserInteracting && !hasCenteredOnce) {
-        map.easeTo({ center: [longitude, latitude], duration: 600 });
-        hasCenteredOnce = true;
+      if (!firstLocationReceived) {
+        firstLocationReceived = true;
+    
+        // 약간 딜레이를 두고 중심 이동 시도 (사용자가 아직 조작 중일 수도 있으므로)
+        setTimeout(() => {
+          if (!isUserInteracting && !hasCenteredOnce) {
+            map.easeTo({ center: [longitude, latitude], duration: 600 });
+            hasCenteredOnce = true;
+          }
+        }, 800); // 약간의 안정성 확보용 delay
       }
 
       if (!userMarker) {
