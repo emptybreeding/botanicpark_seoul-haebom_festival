@@ -8,7 +8,7 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
   <style>
-    body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden;}
+    body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden; overscroll-behavior: none;}
     #map { display: none; width: 100vw; height: 100vh; }
     #map.visible { display: block; }
 
@@ -534,55 +534,56 @@
       });
     }
     
-    function enterMap() {
+    function enterMap(fromEpilogue = false) {
       const prologue = document.getElementById('prologue');
       const enterBtn = document.getElementById('enter-button');
       const epilogue = document.getElementById('epilogue');
       const epilogueBtn = document.getElementById('epilogue-enter-button');
       const mapEl = document.getElementById('map');
     
-      // fade-out epilogue
-      epilogue.classList.remove('visible');
+      if (fromEpilogue) {
+        // 에필로그 → 지도 전환
+        epilogue.classList.remove('visible');
     
-      // fade-in map after slight delay
-      setTimeout(() => {
-        mapEl.classList.remove('hidden');
+        setTimeout(() => {
+          mapEl.classList.remove('hidden');
+          mapEl.classList.add('visible');
+          map.resize();
+          updateZoomHint();
+    
+          prologue.style.opacity = '0';
+          enterBtn.style.opacity = '0';
+          prologue.style.display = 'none';
+          enterBtn.style.display = 'none';
+          epilogue.style.display = 'none';
+          epilogueBtn.style.display = 'none';
+    
+          // 조건 만족 시 에필로그 보기 버튼 다시 보여줌
+          if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
+            document.getElementById('epilogue-again-button').style.display = 'block';
+          }
+        }, 400);
+      } else {
+        // 프롤로그 → 지도 진입
         mapEl.classList.add('visible');
         map.resize();
         updateZoomHint();
     
+        prologue.style.transition = 'opacity 0.8s ease';
         prologue.style.opacity = '0';
+    
+        enterBtn.style.transition = 'opacity 0.5s ease';
+        epilogueBtn.style.transition = 'opacity 0.5s ease';
         enterBtn.style.opacity = '0';
-        prologue.style.display = 'none';
-        enterBtn.style.display = 'none';
-        epilogue.style.display = 'none';
-        epilogueBtn.style.display = 'none';
+        epilogueBtn.style.opacity = '0';
     
-        // ✅ 한 번이라도 봤으면 에필로그 보기 버튼 다시 보이게
-        if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
-          document.getElementById('epilogue-again-button').style.display = 'block';
-        }
-      }, 400);
-    }
-
-    function closeImagePopup() {
-      const overlay = document.getElementById('popup-overlay');
-      const image = document.getElementById('popup-image');
-      const closeBtn = document.querySelector('.popup-close');
-    
-      image.style.opacity = 0;
-      closeBtn.classList.add('hidden');
-    
-      setTimeout(() => {
-        overlay.style.display = 'none';
-        closeBtn.classList.remove('hidden');
-    
-        // ✅ 모든 이미지를 본 상태라면 바로 에필로그로 이동
-        const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
-        if (allViewed) {
-          showEpilogue();
-        }
-      }, 100);
+        setTimeout(() => {
+          prologue.style.display = 'none';
+          enterBtn.style.display = 'none';
+          epilogue.style.display = 'none';
+          epilogueBtn.style.display = 'none';
+        }, 500);
+      }
     }
 
     function showPopupIfNearby(userLng, userLat) {
@@ -608,10 +609,15 @@
         activePopup = null;
       }
     }
+    let hasCenteredOnce = false;
 
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
-      if (!isUserInteracting) map.easeTo({ center: [longitude, latitude], duration: 1000 });
+
+      if (!isUserInteracting && !hasCenteredOnce) {
+        map.easeTo({ center: [longitude, latitude], duration: 600 });
+        hasCenteredOnce = true;
+      }
 
       if (!userMarker) {
         const el = document.createElement('div');
@@ -638,8 +644,8 @@
       }
     }, {
       enableHighAccuracy: true,
-      maximumAge: 10000,
-      timeout: 10000
+      maximumAge: 0,
+      timeout: 5000
     });
 
     map.on('dragstart', () => isUserInteracting = true);
@@ -647,7 +653,7 @@
     map.on('touchstart', () => isUserInteracting = true);
     map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
     map.on('zoomend', () => {
-      setTimeout(() => isUserInteracting = false, 2000);
+setTimeout(() => isUserInteracting = false, 2000);
       updateMarkerVisibility();
       updateZoomHint();
       if (userMarker) {
