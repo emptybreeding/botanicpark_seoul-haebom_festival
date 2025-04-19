@@ -358,7 +358,11 @@
       zoom: 15.8,
       bearing: 314,
       minZoom: 15,
-      maxZoom: 19.3
+      maxZoom: 19.3,
+      maxBounds: [
+        [126.8275, 37.5635], // 넓은 범위 좌하단
+        [126.8435, 37.5765]  // 넓은 범위 우상단
+      ]
     });
 
     let isUserInteracting = false;
@@ -534,56 +538,55 @@
       });
     }
     
-    function enterMap(fromEpilogue = false) {
+    function enterMap() {
       const prologue = document.getElementById('prologue');
       const enterBtn = document.getElementById('enter-button');
       const epilogue = document.getElementById('epilogue');
       const epilogueBtn = document.getElementById('epilogue-enter-button');
       const mapEl = document.getElementById('map');
     
-      if (fromEpilogue) {
-        // 에필로그 → 지도 전환
-        epilogue.classList.remove('visible');
+      // fade-out epilogue
+      epilogue.classList.remove('visible');
     
-        setTimeout(() => {
-          mapEl.classList.remove('hidden');
-          mapEl.classList.add('visible');
-          map.resize();
-          updateZoomHint();
-    
-          prologue.style.opacity = '0';
-          enterBtn.style.opacity = '0';
-          prologue.style.display = 'none';
-          enterBtn.style.display = 'none';
-          epilogue.style.display = 'none';
-          epilogueBtn.style.display = 'none';
-    
-          // 조건 만족 시 에필로그 보기 버튼 다시 보여줌
-          if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
-            document.getElementById('epilogue-again-button').style.display = 'block';
-          }
-        }, 400);
-      } else {
-        // 프롤로그 → 지도 진입
+      // fade-in map after slight delay
+      setTimeout(() => {
+        mapEl.classList.remove('hidden');
         mapEl.classList.add('visible');
         map.resize();
         updateZoomHint();
     
-        prologue.style.transition = 'opacity 0.8s ease';
         prologue.style.opacity = '0';
-    
-        enterBtn.style.transition = 'opacity 0.5s ease';
-        epilogueBtn.style.transition = 'opacity 0.5s ease';
         enterBtn.style.opacity = '0';
-        epilogueBtn.style.opacity = '0';
+        prologue.style.display = 'none';
+        enterBtn.style.display = 'none';
+        epilogue.style.display = 'none';
+        epilogueBtn.style.display = 'none';
     
-        setTimeout(() => {
-          prologue.style.display = 'none';
-          enterBtn.style.display = 'none';
-          epilogue.style.display = 'none';
-          epilogueBtn.style.display = 'none';
-        }, 500);
-      }
+        // ✅ 한 번이라도 봤으면 에필로그 보기 버튼 다시 보이게
+        if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
+          document.getElementById('epilogue-again-button').style.display = 'block';
+        }
+      }, 400);
+    }
+
+    function closeImagePopup() {
+      const overlay = document.getElementById('popup-overlay');
+      const image = document.getElementById('popup-image');
+      const closeBtn = document.querySelector('.popup-close');
+    
+      image.style.opacity = 0;
+      closeBtn.classList.add('hidden');
+    
+      setTimeout(() => {
+        overlay.style.display = 'none';
+        closeBtn.classList.remove('hidden');
+    
+        // ✅ 모든 이미지를 본 상태라면 바로 에필로그로 이동
+        const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
+        if (allViewed) {
+          showEpilogue();
+        }
+      }, 100);
     }
 
     function showPopupIfNearby(userLng, userLat) {
@@ -609,23 +612,14 @@
         activePopup = null;
       }
     }
-    
     let hasCenteredOnce = false;
-    let firstLocationReceived = false;
 
     navigator.geolocation.watchPosition((position) => {
       const { latitude, longitude } = position.coords;
 
-      if (!firstLocationReceived) {
-        firstLocationReceived = true;
-    
-        // 약간 딜레이를 두고 중심 이동 시도 (사용자가 아직 조작 중일 수도 있으므로)
-        setTimeout(() => {
-          if (!isUserInteracting && !hasCenteredOnce) {
-            map.easeTo({ center: [longitude, latitude], duration: 600 });
-            hasCenteredOnce = true;
-          }
-        }, 800); // 약간의 안정성 확보용 delay
+      if (!isUserInteracting && !hasCenteredOnce) {
+        map.easeTo({ center: [longitude, latitude], duration: 600 });
+        hasCenteredOnce = true;
       }
 
       if (!userMarker) {
@@ -657,32 +651,14 @@
       timeout: 5000
     });
 
-    let interactionTimeout;
-
-    function setUserInteracting() {
-      isUserInteracting = true;
-      clearTimeout(interactionTimeout);
-      interactionTimeout = setTimeout(() => {
-        isUserInteracting = false;
-      }, 2000);
-    }
-    
-    // 사용자 상호작용 감지
-    map.on('dragstart', setUserInteracting);
-    map.on('zoomstart', setUserInteracting);
-    map.on('touchmove', setUserInteracting); // ✅ 'touchstart' 대신!
-    
-    // 드래그, 줌 종료 후 추가 작업
-    map.on('dragend', () => {
-      setUserInteracting(); // 재설정해서 2초 유지
-    });
-    
+    map.on('dragstart', () => isUserInteracting = true);
+    map.on('zoomstart', () => isUserInteracting = true);
+    map.on('touchstart', () => isUserInteracting = true);
+    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
     map.on('zoomend', () => {
-      setUserInteracting(); // 재설정해서 2초 유지
-    
+setTimeout(() => isUserInteracting = false, 2000);
       updateMarkerVisibility();
       updateZoomHint();
-    
       if (userMarker) {
         const userLngLat = userMarker.getLngLat();
         showPopupIfNearby(userLngLat.lng, userLngLat.lat);
