@@ -648,14 +648,32 @@
       timeout: 5000
     });
 
-    map.on('dragstart', () => isUserInteracting = true);
-    map.on('zoomstart', () => isUserInteracting = true);
-    map.on('touchstart', () => isUserInteracting = true);
-    map.on('dragend', () => setTimeout(() => isUserInteracting = false, 2000));
+    let interactionTimeout;
+
+    function setUserInteracting() {
+      isUserInteracting = true;
+      clearTimeout(interactionTimeout);
+      interactionTimeout = setTimeout(() => {
+        isUserInteracting = false;
+      }, 2000);
+    }
+    
+    // 사용자 상호작용 감지
+    map.on('dragstart', setUserInteracting);
+    map.on('zoomstart', setUserInteracting);
+    map.on('touchmove', setUserInteracting); // ✅ 'touchstart' 대신!
+    
+    // 드래그, 줌 종료 후 추가 작업
+    map.on('dragend', () => {
+      setUserInteracting(); // 재설정해서 2초 유지
+    });
+    
     map.on('zoomend', () => {
-setTimeout(() => isUserInteracting = false, 2000);
+      setUserInteracting(); // 재설정해서 2초 유지
+    
       updateMarkerVisibility();
       updateZoomHint();
+    
       if (userMarker) {
         const userLngLat = userMarker.getLngLat();
         showPopupIfNearby(userLngLat.lng, userLngLat.lat);
