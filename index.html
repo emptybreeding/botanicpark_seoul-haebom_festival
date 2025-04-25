@@ -7,11 +7,35 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
+  <div id="bgm-banner" style="display: none;">botanicpark seoul-haebom festival_BGM</div>
   <style>
     body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden; overscroll-behavior: none;}
     #map { display: none; width: 100vw; height: 100vh; }
     #map.visible { display: block; }
 
+    #bgm-banner {
+      position: absolute;
+      top: 10px; /* 상단 위치 */
+      left: 100%; /* 처음은 오른쪽 바깥에서 시작 */
+      white-space: nowrap;
+      color: #448e7a; /* 네가 쓴 버튼 계열 색상 */
+      font-size: 18px;
+      font-weight: bold;
+      z-index: 1600;
+      animation: slideLeft 15s linear infinite;
+      pointer-events: none;
+      font-family: "Noto Sans KR", sans-serif; /* 기존 스타일 통일 */
+    }
+    
+    /* 슬라이드 애니메이션 정의 */
+    @keyframes slideLeft {
+      0% {
+        left: 100%;
+      }
+      100% {
+        left: -100%;
+      }
+    }
     
     #prologue {
       position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -528,7 +552,7 @@
         enterBtn.style.display = 'none';
         epilogue.style.display = 'none';
         epilogueBtn.style.display = 'none';
-    
+        document.getElementById('bgm-banner').style.display = 'block';
         // ✅ 한 번이라도 봤으면 에필로그 보기 버튼 다시 보이게
         if (epilogueSeen || [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`))) {
           document.getElementById('epilogue-again-button').style.display = 'block';
