@@ -298,25 +298,6 @@
 
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
-    
-    function closeImagePopup() {
-      const overlay = document.getElementById('popup-overlay');
-      const image = document.getElementById('popup-image');
-      const closeBtn = document.querySelector('.popup-close');
-    
-      image.style.opacity = 0;
-      closeBtn.classList.add('hidden');
-    
-      setTimeout(() => {
-        overlay.style.display = 'none';
-        closeBtn.classList.remove('hidden');
-    
-        const allViewed = [...Array(7).keys()].every(i => viewedPopups.has(`title${i + 1}.png`));
-        if (allViewed) {
-          showEpilogue();
-        }
-      }, 100);
-    }
 
     const map = new mapboxgl.Map({
       container: 'map',
