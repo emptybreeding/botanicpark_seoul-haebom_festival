@@ -289,6 +289,11 @@
 
   <div id="map"></div>
 
+  <audio id="bgm" autoplay loop preload="auto">
+    <source src="spring_of_haebom.mp3" type="audio/mpeg">
+    브라우저가 오디오를 지원하지 않습니다.
+  </audio>
+
   <img id="map-title-banner" src="mt1.png" alt="2025 해봄 타이틀" />
 
   <button id="epilogue-again-button" onclick="showEpilogue()">에필로그 보기</button>
@@ -681,6 +686,13 @@
         const userLngLat = userMarker.getLngLat();
         showPopupIfNearby(userLngLat.lng, userLngLat.lat);
       }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const bgm = document.getElementById('bgm');
+      bgm.play().catch(err => {
+        console.log('BGM play error:', err);
+      });
     });
 
     window.onerror = function(msg, url, line, col, error) {
