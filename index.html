@@ -268,6 +268,9 @@
   </style>
 </head>
 <body>
+
+  <audio id="bgm" src="map.mp3" loop preload="auto"></audio>
+  
   <div id="prologue">
     <img src="prologue.jpeg" alt="Intro Image">
   </div>
@@ -288,11 +291,6 @@
   </div>
 
   <div id="map"></div>
-
-  <audio id="bgm" autoplay loop preload="auto">
-    <source src="spring_of_haebom.mp3" type="audio/mpeg">
-    브라우저가 오디오를 지원하지 않습니다.
-  </audio>
 
   <img id="map-title-banner" src="mt1.png" alt="2025 해봄 타이틀" />
 
@@ -555,6 +553,10 @@
       const epilogueBtn = document.getElementById('epilogue-enter-button');
       const mapEl = document.getElementById('map');
     
+      const bgm = document.getElementById('bgm');
+      bgm.volume = 0.2; // 🎵 볼륨 20%로 부드럽게
+      bgm.play().catch(e => console.log('BGM 재생 실패:', e)); // 혹시 실패해도 에러 무시
+    
       // fade-out epilogue
       epilogue.classList.remove('visible');
     
@@ -686,13 +688,6 @@
         const userLngLat = userMarker.getLngLat();
         showPopupIfNearby(userLngLat.lng, userLngLat.lat);
       }
-    });
-
-    document.addEventListener('DOMContentLoaded', () => {
-      const bgm = document.getElementById('bgm');
-      bgm.play().catch(err => {
-        console.log('BGM play error:', err);
-      });
     });
 
     window.onerror = function(msg, url, line, col, error) {
