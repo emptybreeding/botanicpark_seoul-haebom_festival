@@ -507,8 +507,10 @@
       const mapEl = document.getElementById('map');
     
       const bgm = document.getElementById('bgm');
-      bgm.volume = 0.2; // 🎵 볼륨 20%로 부드럽게
-      bgm.play().catch(e => console.log('BGM 재생 실패:', e)); // 혹시 실패해도 에러 무시
+      bgm.volume = 0; // 처음엔 0으로
+      bgm.play().then(() => {
+        fadeInBGM(); // 재생 성공하면 부드럽게 볼륨 올리기
+      }).catch(e => console.log('BGM 재생 실패:', e));
     
       // fade-out epilogue
       epilogue.classList.remove('visible');
@@ -532,6 +534,21 @@
           document.getElementById('epilogue-again-button').style.display = 'block';
         }
       }, 400);
+    }
+
+    function fadeInBGM() {
+      const bgm = document.getElementById('bgm');
+      const targetVolume = 0.2;
+      const step = 0.01;
+      const interval = 100;
+    
+      const fadeIn = setInterval(() => {
+        if (bgm.volume < targetVolume) {
+          bgm.volume = Math.min(bgm.volume + step, targetVolume);
+        } else {
+          clearInterval(fadeIn);
+        }
+      }, interval);
     }
 
     function closeImagePopup() {
