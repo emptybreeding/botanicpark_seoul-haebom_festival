@@ -298,34 +298,6 @@
 
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoidGFrZWJ1Y2hpaGFydSIsImEiOiJjbThyOWk5bnowamx1MmtzY3NqM3h4NGg1In0.z8tX24NQPHkZY_GwSLsc9Q';
-
-    function enterMap() {
-      const prologue = document.getElementById('prologue');
-      const enterBtn = document.getElementById('enter-button');
-      const epilogue = document.getElementById('epilogue');
-      const epilogueBtn = document.getElementById('epilogue-enter-button');
-      const mapEl = document.getElementById('map');
-    
-      // 지도 활성화
-      mapEl.classList.add('visible');
-      map.resize();
-      updateZoomHint();
-    
-      prologue.style.transition = 'opacity 0.8s ease';
-      prologue.style.opacity = '0';
-    
-      enterBtn.style.transition = 'opacity 0.5s ease';
-      epilogueBtn.style.transition = 'opacity 0.5s ease';
-      enterBtn.style.opacity = '0';
-      epilogueBtn.style.opacity = '0';
-    
-      setTimeout(() => {
-        prologue.style.display = 'none';
-        enterBtn.style.display = 'none';
-        epilogue.style.display = 'none';
-        epilogueBtn.style.display = 'none';
-      }, 500);
-    }
     
     function closeImagePopup() {
       const overlay = document.getElementById('popup-overlay');
