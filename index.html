@@ -7,34 +7,44 @@
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@6/turf.min.js"></script>
   <script src="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.js"></script>
   <link href="https://api.mapbox.com/mapbox-gl-js/v3.1.1/mapbox-gl.css" rel="stylesheet" />
-  <div id="bgm-banner" style="display: none;">서울식물원의 봄_BGM</div>
+  <div id="bgm-banner-wrapper" style="display: none;">
+    <div id="bgm-banner">
+      <span>서울식물원의 봄_BGM&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      <span>서울식물원의 봄_BGM&nbsp;&nbsp;&nbsp;&nbsp;</span> <!-- 두 번! -->
+    </div>
+  </div>
   <style>
     body, html { margin: 0; padding: 0; height: 100dvh; overflow: hidden; overscroll-behavior: none;}
     #map { display: none; width: 100vw; height: 100vh; }
     #map.visible { display: block; }
 
-    #bgm-banner {
+    #bgm-banner-wrapper {
       position: absolute;
-      top: 10px; /* 상단 위치 */
-      left: 100%; /* 처음은 오른쪽 바깥에서 시작 */
-      white-space: nowrap;
-      color: #fff; /* 네가 쓴 버튼 계열 색상 */
-      font-size: 18px;
-      font-weight: bold;
+      top: 10px;
+      left: 0;
+      width: 100%;
+      overflow: hidden; /* 바깥은 안 보이게 잘라줘 */
       z-index: 3000;
-      animation: slideLeft 15s linear infinite;
       pointer-events: none;
-      font-family: "Noto Sans KR", sans-serif; /* 기존 스타일 통일 */
     }
     
+    #bgm-banner {
+      display: inline-block;
+      white-space: nowrap;
+      color: #448e7a;
+      font-size: 18px;
+      font-weight: bold;
+      animation: slideLeft 30s linear infinite; /* 느긋하게! */
+      font-family: "Noto Sans KR", sans-serif;
+      text-shadow: 1px 1px 2px rgba(0,0,0,0.2);
+    }
     
-    /* 슬라이드 애니메이션 정의 */
     @keyframes slideLeft {
       0% {
-        transform: translateX(100%);
+        transform: translateX(0%);
       }
       100% {
-        transform: translateX(-120%);
+        transform: translateX(-50%); /* 절반만 이동! */
       }
     }
     
